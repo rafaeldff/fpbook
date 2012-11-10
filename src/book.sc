@@ -30,22 +30,17 @@ object book {
 
 	def curry3_2[B,C,D,E](f: (B,C,D)=>E): (B,C) => D => E =
 	  (b,c) => d => f(b,c,d)                  //> curry3_2: [B, C, D, E](f: (B, C, D) => E)(B, C) => D => E
-	  
-	  
 
+  def liftU[A,B,C,D](f: B => C => D)(g: A => B, h: A =>  C): A => D =
+    a => f(g(a))(h(a))                            //> liftU: [A, B, C, D](f: B => (C => D))(g: A => B, h: A => C)A => D
+	  
+	  
   def lift3wlift[A,B,C,D,E](f: (B,C,D) => E)(g: A=>B, h:A=>C, i:A=>D): A => E = {
-		val ff: (B,C) => D => E = curry3_2(f)
+		val ff: B => C => D => E = f.curried
 		
-		val lf: (A=>B,A=>C) => A => D => E = lift(ff) _
+		val lfAp: A => D => E = liftU(ff)(g,h)
 		
-		val lfAp: A => D => E = lf(g,h)
-		
-		val lfApUnc: (A,D) => E = Function.uncurried(lfAp)
-		
-		val secLf: (A=>A,A=>D) => A => E = lift(lfApUnc) _
-		val secLfAp: A => E = secLf(identity, i)
-		
-		secLfAp
+		liftU(lfAp)(identity[A], i)
   }                                               //> lift3wlift: [A, B, C, D, E](f: (B, C, D) => E)(g: A => B, h: A => C, i: A =
                                                   //| > D)A => E
 
