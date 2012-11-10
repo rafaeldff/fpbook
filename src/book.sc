@@ -1,12 +1,14 @@
 object book {
 
-	// Chap 2
-	
+	/*
+	 *  Chap 2
+	 */
 	def format(x:Any) = x match { case true => "T"; case false => "F"; case x:Int => "%3d" format x}
                                                   //> format: (x: Any)String
 	
 	type Pred[T] = T => Boolean
 	
+	//EXERCISE 10
   def lift[A,B,C,D](f: (B,C) => D)(g: A => B, h: A =>  C): A => D =
     a => f(g(a),h(a))                             //> lift: [A, B, C, D](f: (B, C) => D)(g: A => B, h: A => C)A => D
     
@@ -28,19 +30,18 @@ object book {
     a => f(g(a),h(a),i(a))                        //> lift3: [A, B, C, D, E](f: (B, C, D) => E)(g: A => B, h: A => C, i: A => D)A 
                                                   //| => E
 
-	def curry3_2[B,C,D,E](f: (B,C,D)=>E): (B,C) => D => E =
-	  (b,c) => d => f(b,c,d)                  //> curry3_2: [B, C, D, E](f: (B, C, D) => E)(B, C) => D => E
-
   def liftU[A,B,C,D](f: B => C => D)(g: A => B, h: A =>  C): A => D =
     a => f(g(a))(h(a))                            //> liftU: [A, B, C, D](f: B => (C => D))(g: A => B, h: A => C)A => D
 	  
-	  
+	//EXERCISE 11
   def lift3wlift[A,B,C,D,E](f: (B,C,D) => E)(g: A=>B, h:A=>C, i:A=>D): A => E = {
 		val ff: B => C => D => E = f.curried
 		
-		val lfAp: A => D => E = liftU(ff)(g,h)
+		val lfA_DE : A => D => E = liftU(ff)(g,h)
 		
-		liftU(lfAp)(identity[A], i)
+		val lfA_E = liftU(lfA_DE)(identity[A], i)
+		
+		lfA_E
   }                                               //> lift3wlift: [A, B, C, D, E](f: (B, C, D) => E)(g: A => B, h: A => C, i: A =
                                                   //| > D)A => E
 
@@ -59,8 +60,33 @@ object book {
   
   
   //(for (i <- 0 to 4) yield List(identity[Int] _, div3, div5, div3and5, div3and5_b).map(_.apply(i)).map(format)).map(println)
-                                                  
-                                                  0
-                                                  //> res2: Int(0) = 0
+ 
+  //EXERCISE 12
+  def trivialFib(n:Int):Int = n match {
+    case 0 | 1 => n
+    case _ => trivialFib(n-1) + trivialFib(n-2)
+  }                                               //> trivialFib: (n: Int)Int
+  
+  def fib(n:Int):Int = {
+    def loop(n:Int, x1:Int, x2:Int):Int = n match {
+      case 0 => x1
+      case 1 => x2
+      case _ => loop(n-1, x2, x1 + x2)
+    }
+		loop(n, 0, 1)
+  }                                               //> fib: (n: Int)Int
+  
+  (0 to 10).map (x => (trivialFib(x), fib(x))) foreach (println)
+                                                  //> (0,0)
+                                                  //| (1,1)
+                                                  //| (1,1)
+                                                  //| (2,2)
+                                                  //| (3,3)
+                                                  //| (5,5)
+                                                  //| (8,8)
+                                                  //| (13,13)
+                                                  //| (21,21)
+                                                  //| (34,34)
+                                                  //| (55,55)
 
 }
