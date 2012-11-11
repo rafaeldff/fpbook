@@ -59,7 +59,14 @@ object book {
 	concat_wlift(10)                          //> res1: String = 9 10 11
   
   
-  //(for (i <- 0 to 4) yield List(identity[Int] _, div3, div5, div3and5, div3and5_b).map(_.apply(i)).map(format)).map(println)
+  (for (i <- 0 to 4) yield List(identity[Int] _, div3, div5, div3and5, div3and5_b).map(_.apply(i)).map(format)).map(println)
+                                                  //> List(  0, T, T, T, T)
+                                                  //| List(  1, F, F, F, F)
+                                                  //| List(  2, F, F, F, F)
+                                                  //| List(  3, T, F, F, F)
+                                                  //| List(  4, F, F, F, F)
+                                                  //| res2: scala.collection.immutable.IndexedSeq[Unit] = Vector((), (), (), (), 
+                                                  //| ())
  
   //EXERCISE 12
   def trivialFib(n:Int):Int = n match {
