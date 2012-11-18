@@ -113,8 +113,49 @@ object chap3 {
  	appendAll(ll)                             //> res16: List[Int] = List(0, 0, 1, 0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3, 4, 0, 1, 
                                                   //| 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 
                                                   //| 6, 7, 8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
- l.map {_ + 1}                                    //> res17: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
- map(l){_ + 1}                                    //> res18: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+ 	l.map {_ + 1}                             //> res17: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+ 	map(l){_ + 1}                             //> res18: List[Int] = List(2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
  
- filter(l)(x => x > 3 && x < 10)                  //> res19: List[Int] = List(4, 5, 6, 7, 8, 9)
+ 	filter(l)(x => x > 3 && x < 10);          //> res19: List[Int] = List(4, 5, 6, 7, 8, 9)
+ 
+ 	sealed trait Tree[+A]
+	case class Leaf[A](value: A) extends Tree[A]
+	case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+	
+	val t = Branch(Branch(Branch(Branch(Leaf(30),Leaf(40)),Leaf(2)),Leaf(1)),Branch(Leaf(42),Leaf(99)))
+                                                  //> t  : chap3.Branch[Int] = Branch(Branch(Branch(Branch(Leaf(30),Leaf(40)),Lea
+                                                  //| f(2)),Leaf(1)),Branch(Leaf(42),Leaf(99)))
+  def size[T](tree:Tree[T]):Int = tree match {
+  	case Leaf(_) => 1
+  	case Branch (l,r) => 1 + size(l) + size(r)
+  }                                               //> size: [T](tree: chap3.Tree[T])Int
+  
+  def maximum(tree:Tree[Int]):Int = tree match {
+  	case Leaf(n) => n
+  	case Branch(l:Tree[Int],r:Tree[Int]) => maximum(l) max maximum(r)
+  }                                               //> maximum: (tree: chap3.Tree[Int])Int
+  
+  def depth[T](tree:Tree[T]):Int = tree match {
+  	case Leaf(_) => 1
+  	case Branch(l,r) => 1 + (depth(l) max depth(r))
+  }                                               //> depth: [T](tree: chap3.Tree[T])Int
+  
+  def foldTree[A,B](tree:Tree[A])(f: (B,B) => B)(g: A => B):B  = tree match {
+  	case Leaf(a) => g(a)
+  	case Branch(l,r) => f(foldTree(l)(f)(g), foldTree(r)(f)(g))
+  }                                               //> foldTree: [A, B](tree: chap3.Tree[A])(f: (B, B) => B)(g: A => B)B
+  
+  /*  Using folds */
+  def size2[T](tree:Tree[T]):Int = foldTree[T,Int](tree)(1 + _ + _)(_ => 1)
+                                                  //> size2: [T](tree: chap3.Tree[T])Int
+  def maximum2(tree:Tree[Int]):Int = foldTree[Int,Int](tree)(_ max _)(identity _)
+                                                  //> maximum2: (tree: chap3.Tree[Int])Int
+	def depth2[T](tree:Tree[T]):Int = foldTree[T,Int](tree)(1 + _ max _)(_ => 1)
+                                                  //> depth2: [T](tree: chap3.Tree[T])Int
+  
+ 	List(size _, size2 _).map(_ apply t)      //> res20: List[Int] = List(11, 11)
+  
+  List(maximum _, maximum2 _).map(_ apply t)      //> res21: List[Int] = List(99, 99)
+  
+  List(depth _, depth2 _).map(_ apply t)          //> res22: List[Int] = List(5, 5)
 }
