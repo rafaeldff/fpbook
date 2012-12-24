@@ -58,34 +58,42 @@ object chap4b {
   case class Name(val value: String)
   case class Age(val value: Int)
   
-  def mkName(name: String): Either[String, Name] =
-    if (name == "" || name == null) Left("Name is empty.")
-    else Right(new Name(name))                    //> mkName: (name: String)chap4b.Either[String,chap4b.Name]
+      
+  type AccumEither[E, T] = Either[List[E], T]
+  def map2Accum[A,B,C,E](a: AccumEither[E, A])(b: AccumEither[E, B])(f: (A,B) => C): AccumEither[E, C] =
+    (a, b) match {
+      case (Right(va), Right(vb)) => Right(f(va, vb))
+      case (Right(va), Left(e)) => Left(e)
+      case (Left(e), Right(vb)) => Left(e)
+      case (Left(e), Left(ee)) => Left(e ::: ee)
+    }                                             //> map2Accum: [A, B, C, E](a: chap4b.AccumEither[E,A])(b: chap4b.AccumEither[E
+                                                  //| ,B])(f: (A, B) => C)chap4b.AccumEither[E,C]
     
-  def mkAge(age: Int): Either[String, Age] =
-    if (age < 0) Left("Age is out of range.")
-    else Right(new Age(age))                      //> mkAge: (age: Int)chap4b.Either[String,chap4b.Age]
+  def accumLeft[E](e:E): AccumEither[E, Nothing] = Left(List(e))
+                                                  //> accumLeft: [E](e: E)chap4b.AccumEither[E,Nothing]
+  def accumRight[R](r:R): AccumEither[Nothing, R] = Right(r)
+                                                  //> accumRight: [R](r: R)chap4b.AccumEither[Nothing,R]
+  def mkName(name: String): AccumEither[String, Name] =
+    if (name == "" || name == null) accumLeft("Name is empty.")
+    else accumRight(new Name(name))               //> mkName: (name: String)chap4b.AccumEither[String,chap4b.Name]
     
-  def mkPerson(name: String, age: Int): Either[String, Person] =
-    mkName(name).map2(mkAge(age))(Person(_, _))   //> mkPerson: (name: String, age: Int)chap4b.Either[String,chap4b.Person]
+  def mkAge(age: Int): AccumEither[String, Age] =
+    if (age < 0) accumLeft("Age is out of range.")
+    else accumRight(new Age(age))                 //> mkAge: (age: Int)chap4b.AccumEither[String,chap4b.Age]
     
-  //type AccumEither[T, E] = Either[T, List[E]]
-  //def map2List[A,B,C,E](a: AccumEither[A,E])(b: Either[B, E])(f: (A,B) => C): AccumEither[C, E] =
-  //  (a, b) match {
-  //    case (Right(va), Right(vb)) => Right(f(va, vb))
-  //    case (Right(va), Left(e)) => Left(e)
-  //    case (Left(e), Right(vb)) => Left(e)
-  //    case (Left(e), Left(ee)) => Left(e ::: ee)
-  //  }
-  //}
+  def mkPerson(name: String, age: Int): AccumEither[String, Person] =
+  	map2Accum(mkName(name))(mkAge(age))(Person(_, _))
+                                                  //> mkPerson: (name: String, age: Int)chap4b.AccumEither[String,chap4b.Person]
   
     
-    
-  mkPerson("name", 10)                            //> res8: chap4b.Either[String,chap4b.Person] = Right(Person(Name(name),Age(10)
-                                                  //| ))
-  mkPerson("", 100)                               //> res9: chap4b.Either[String,chap4b.Person] = Left(Name is empty.)
- 	mkPerson("the name", -10)                 //> res10: chap4b.Either[String,chap4b.Person] = Left(Age is out of range.)
- 	mkPerson("", -1)                          //> res11: chap4b.Either[String,chap4b.Person] = Left(Age is out of range.)
+  mkPerson("name", 10)                            //> res8: chap4b.AccumEither[String,chap4b.Person] = Right(Person(Name(name),Ag
+                                                  //| e(10)))
+  mkPerson("", 100)                               //> res9: chap4b.AccumEither[String,chap4b.Person] = Left(List(Name is empty.))
+                                                  //| 
+ 	mkPerson("the name", -10)                 //> res10: chap4b.AccumEither[String,chap4b.Person] = Left(List(Age is out of r
+                                                  //| ange.))
+ 	mkPerson("", -1)                          //> res11: chap4b.AccumEither[String,chap4b.Person] = Left(List(Name is empty.,
+                                                  //|  Age is out of range.))
  	
  	
 }
