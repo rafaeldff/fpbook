@@ -1,4 +1,4 @@
-object book {
+object chap2 {
 
 	/*
 	 *  Chap 2
