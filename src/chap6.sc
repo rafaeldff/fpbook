@@ -12,7 +12,9 @@ object chap6 {
     }
   }
   
-  type Rand[+A] = RNG => (A, RNG)
+  type State[S, +A] = S => (A, S)
+  
+  type Rand[+A] = State[RNG, A]
   
   val nextInt: Rand[Int] = rng => rng.nextInt     //> nextInt  : chap6.RNG => (Int, chap6.RNG) = <function1>
   
@@ -21,11 +23,6 @@ object chap6 {
   def map[A,B](rand: Rand[A])(f: A => B): Rand[B] =
     flatMap(rand) {a => unit(f(a))}               //> map: [A, B](rand: chap6.RNG => (A, chap6.RNG))(f: A => B)chap6.RNG => (B, ch
                                                   //| ap6.RNG)
-  
-  /*  {rng =>
-  	val (a, rngA) = rand(rng)
-  	(f(a), rngA)
-  }*/
   
   def flatMap[A,B](r: Rand[A])(f: A => Rand[B]): Rand[B] = {rng =>
     val (a, rngA) = r(rng)
@@ -39,7 +36,7 @@ object chap6 {
                                                   //> positiveMax: (n: Int)chap6.RNG => (Int, chap6.RNG)
 
   positiveMax(1000)(RNG.simple(System.currentTimeMillis))
-                                                  //> res0: (Int, chap6.RNG) = (771,chap6$RNG$$anon$1@41cb0ed6)
+                                                  //> res0: (Int, chap6.RNG) = (926,chap6$RNG$$anon$1@41cb0ed6)
 
   /** Ex 1, 9 */
 	def positiveInt: Rand[Int] =
@@ -51,7 +48,7 @@ object chap6 {
 	  }                                       //> positiveInt: => chap6.RNG => (Int, chap6.RNG)
                                                   
   positiveInt(RNG.simple(System.currentTimeMillis))
-                                                  //> res1: (Int, chap6.RNG) = (1651345955,chap6$RNG$$anon$1@62bbf09c)
+                                                  //> res1: (Int, chap6.RNG) = (1982717249,chap6$RNG$$anon$1@62bbf09c)
 	
 	/** Ex 2, 6 */
 	def randomDouble(rng:RNG): (Double, RNG) = {
@@ -129,5 +126,4 @@ object chap6 {
   ints(10)(RNG.simple(10))                        //> res6: (List[Int], chap6.RNG) = (List(3847489, 1334288366, 1486862010, 71166
                                                   //| 2464, -1453296530, -775316920, 1157481928, 294681619, -753148084, 697431532
                                                   //| ),chap6$RNG$$anon$1@d1e67eb)
-  
 }
