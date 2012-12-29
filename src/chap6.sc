@@ -23,6 +23,12 @@ object chap6 {
   	(f(a), rngA)
   }                                               //> map: [A, B](rand: chap6.RNG => (A, chap6.RNG))(f: A => B)chap6.RNG => (B, ch
                                                   //| ap6.RNG)
+  
+  def flatMap[A,B](r: Rand[A])(f: A => Rand[B]): Rand[B] = {rng =>
+    val (a, rngA) = r(rng)
+    f(a)(rngA)
+  }                                               //> flatMap: [A, B](r: chap6.RNG => (A, chap6.RNG))(f: A => (chap6.RNG => (B, ch
+                                                  //| ap6.RNG)))chap6.RNG => (B, chap6.RNG)
    
   /** Ex 5 */
   def positiveMax(n: Int): Rand[Int] =
@@ -30,14 +36,19 @@ object chap6 {
                                                   //> positiveMax: (n: Int)chap6.RNG => (Int, chap6.RNG)
 
   positiveMax(1000)(RNG.simple(System.currentTimeMillis))
-                                                  //> res0: (Int, chap6.RNG) = (702,chap6$RNG$$anon$1@66147e60)
+                                                  //> res0: (Int, chap6.RNG) = (140,chap6$RNG$$anon$1@63815614)
 
-  /** Ex 1 */
-	def randomPositive(rng:RNG): (Int, RNG) = {
-		val (randomInt, nextRng) = rng.nextInt
-		val randomPos = if (randomInt == Int.MinValue) Int.MaxValue else randomInt.abs
-		(randomPos, nextRng)
-	}                                         //> randomPositive: (rng: chap6.RNG)(Int, chap6.RNG)
+  /** Ex 1, 9 */
+	def positiveInt: Rand[Int] =
+	  flatMap(nextInt) {randomInt =>
+	    if (randomInt == Int.MinValue)
+	    	positiveInt
+	    else
+	    	unit(randomInt.abs)
+	  }                                       //> positiveInt: => chap6.RNG => (Int, chap6.RNG)
+                                                  
+  positiveInt(RNG.simple(System.currentTimeMillis))
+                                                  //> res1: (Int, chap6.RNG) = (294710942,chap6$RNG$$anon$1@677d8938)
 	
 	/** Ex 2, 6 */
 	def randomDouble(rng:RNG): (Double, RNG) = {
@@ -54,9 +65,9 @@ object chap6 {
   val doubles = Stream.iterate((0d, RNG.simple(0))) {
   	case (i, rng) => nextDouble(rng)
   }                                               //> doubles  : scala.collection.immutable.Stream[(Double, chap6.RNG)] = Stream(
-                                                  //| (0.0,chap6$RNG$$anon$1@4acc70e8), ?)
+                                                  //| (0.0,chap6$RNG$$anon$1@49f543bb), ?)
                                                   
-  doubles.map{case (i, _) => i}.take(10).force    //> res1: scala.collection.immutable.Stream[Double] = Stream(0.0, 0.0, 0.001970
+  doubles.map{case (i, _) => i}.take(10).force    //> res2: scala.collection.immutable.Stream[Double] = Stream(0.0, 0.0, 0.001970
                                                   //| 788930529165, 0.08326200306567456, 0.35328528487742195, 0.7292044967083281,
                                                   //|  0.18266122424167638, 0.18459529531402294, 0.9744344479285341, 0.9464994412
                                                   //| 597731)
@@ -79,10 +90,10 @@ object chap6 {
     map(intDouble){case (i,d) => (d,i)}           //> doubleInt: => chap6.RNG => ((Double, Int), chap6.RNG)
     
  
- 	intDouble(RNG.simple(10000))              //> res2: ((Int, Double), chap6.RNG) = ((-447478295,0.6423802658181545),chap6$R
-                                                  //| NG$$anon$1@73e7b6b9)
-  doubleInt(RNG.simple(20000))                    //> res3: ((Double, Int), chap6.RNG) = ((0.7132686803644843,-894956590),chap6$R
-                                                  //| NG$$anon$1@d7fe0ec)
+ 	intDouble(RNG.simple(10000))              //> res3: ((Int, Double), chap6.RNG) = ((-447478295,0.6423802658181545),chap6$R
+                                                  //| NG$$anon$1@680f891c)
+  doubleInt(RNG.simple(20000))                    //> res4: ((Double, Int), chap6.RNG) = ((0.7132686803644843,-894956590),chap6$R
+                                                  //| NG$$anon$1@1feca9d2)
   
   def double3(rng: RNG): ((Double, Double, Double), RNG) = {
   	val (randomD1, nextRng1) = randomDouble(rng)
@@ -106,8 +117,8 @@ object chap6 {
                                                   //| chap6.RNG)
   
   sequence(List(nextInt, nextInt, nextInt))(RNG.simple(99))
-                                                  //> res4: (List[Int], chap6.RNG) = (List(38090141, 1575376209, 1102671736),chap
-                                                  //| 6$RNG$$anon$1@459a76c9)
+                                                  //> res5: (List[Int], chap6.RNG) = (List(38090141, 1575376209, 1102671736),chap
+                                                  //| 6$RNG$$anon$1@5c2f925d)
   
 	/** Ex 4, 8 */
 	def ints(i:Int): Rand[List[Int]] = {
@@ -115,8 +126,8 @@ object chap6 {
 		sequence(rands)
 	}                                         //> ints: (i: Int)chap6.RNG => (List[Int], chap6.RNG)
 	
-  ints(10)(RNG.simple(10))                        //> res5: (List[Int], chap6.RNG) = (List(3847489, 1334288366, 1486862010, 71166
+  ints(10)(RNG.simple(10))                        //> res6: (List[Int], chap6.RNG) = (List(3847489, 1334288366, 1486862010, 71166
                                                   //| 2464, -1453296530, -775316920, 1157481928, 294681619, -753148084, 697431532
-                                                  //| ),chap6$RNG$$anon$1@4ef259d6)
+                                                  //| ),chap6$RNG$$anon$1@12b3519c)
   
 }
