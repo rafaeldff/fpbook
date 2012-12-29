@@ -37,7 +37,7 @@ object chap6 {
                                                   //> positiveMax: (n: Int)chap6.Rand[Int]
 
   positiveMax(1000).run(RNG.simple(System.currentTimeMillis))
-                                                  //> res0: (Int, chap6.RNG) = (519,chap6$RNG$$anon$1@26830cbb)
+                                                  //> res0: (Int, chap6.RNG) = (461,chap6$RNG$$anon$1@4ba43077)
 
   /** Ex 1, 9 */
 	def positiveInt: Rand[Int] =
@@ -49,7 +49,7 @@ object chap6 {
 	  }                                       //> positiveInt: => chap6.Rand[Int]
                                                   
   positiveInt.run(RNG.simple(System.currentTimeMillis))
-                                                  //> res1: (Int, chap6.RNG) = (1121981446,chap6$RNG$$anon$1@6cf5b81a)
+                                                  //> res1: (Int, chap6.RNG) = (996788101,chap6$RNG$$anon$1@53194879)
 	
 	/** Ex 2, 6 */
 	def randomDouble(rng:RNG): (Double, RNG) = {
@@ -66,7 +66,7 @@ object chap6 {
   val doubles = Stream.iterate((0d, RNG.simple(0))) {
   	case (i, rng) => nextDouble.run(rng)
   }                                               //> doubles  : scala.collection.immutable.Stream[(Double, chap6.RNG)] = Stream(
-                                                  //| (0.0,chap6$RNG$$anon$1@97eea10), ?)
+                                                  //| (0.0,chap6$RNG$$anon$1@5c21bae0), ?)
                                                   
   doubles.map{case (i, _) => i}.take(10).force    //> res2: scala.collection.immutable.Stream[Double] = Stream(0.0, 0.0, 0.001970
                                                   //| 788930529165, 0.08326200306567456, 0.35328528487742195, 0.7292044967083281,
@@ -89,9 +89,9 @@ object chap6 {
     
  
  	intDouble.run(RNG.simple(10000))          //> res3: ((Int, Double), chap6.RNG) = ((-447478295,0.6423802658181545),chap6$R
-                                                  //| NG$$anon$1@4fa3c06e)
+                                                  //| NG$$anon$1@592ed60d)
   doubleInt.run(RNG.simple(20000))                //> res4: ((Double, Int), chap6.RNG) = ((0.7132686803644843,-894956590),chap6$R
-                                                  //| NG$$anon$1@12b3519c)
+                                                  //| NG$$anon$1@362ae278)
   
   def double3(rng: RNG): ((Double, Double, Double), RNG) = {
   	val (randomD1, nextRng1) = randomDouble(rng)
@@ -101,21 +101,19 @@ object chap6 {
   }                                               //> double3: (rng: chap6.RNG)((Double, Double, Double), chap6.RNG)
   
   /** Ex 8 */
-  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = State( {rng =>
-    def loop(rands: List[Rand[A]], curRng:RNG): (List[A], RNG) = rands match {
-    	case Nil => (Nil, curRng)
-      case ra :: ras =>
-        val (a, nextRng) = ra.run(curRng)
-        val (rest, finalRng) = loop(ras, nextRng)
-        (a :: rest, finalRng)
+  def sequence[S,A](fs: List[State[S,A]]): State[S, List[A]] = {
+    def loop(rands: List[State[S,A]]): State[S,List[A]] = rands match {
+    	case Nil => unit(Nil)
+    	case ra :: ras =>
+    	  flatMap(ra) {a => map(loop(ras)) {rest => a :: rest} }
     }
     
-    loop(fs, rng)
-  })                                              //> sequence: [A](fs: List[chap6.Rand[A]])chap6.Rand[List[A]]
+    loop(fs)
+  }                                               //> sequence: [S, A](fs: List[chap6.State[S,A]])chap6.State[S,List[A]]
   
   sequence(List(nextInt, nextInt, nextInt)).run(RNG.simple(99))
                                                   //> res5: (List[Int], chap6.RNG) = (List(38090141, 1575376209, 1102671736),chap
-                                                  //| 6$RNG$$anon$1@6e17fe3f)
+                                                  //| 6$RNG$$anon$1@2361d10f)
   
 	/** Ex 4, 8 */
 	def ints(i:Int): Rand[List[Int]] = {
@@ -125,5 +123,5 @@ object chap6 {
 	
   ints(10).run(RNG.simple(10))                    //> res6: (List[Int], chap6.RNG) = (List(3847489, 1334288366, 1486862010, 71166
                                                   //| 2464, -1453296530, -775316920, 1157481928, 294681619, -753148084, 697431532
-                                                  //| ),chap6$RNG$$anon$1@2fa4a715)
+                                                  //| ),chap6$RNG$$anon$1@76d697d9)
 }
