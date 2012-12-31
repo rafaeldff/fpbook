@@ -30,6 +30,17 @@ object chap6b {
 	}                                         //> simulateMachine: (inputs: List[chap6b.Input])chapter6.StateMonad.State[chap6
                                                   //| b.Machine,Int]
                                                   
-  simulateMachine( Coin :: Turn :: Coin :: Turn :: Coin :: Nil ).run(initialMachine)
-                                                  //> res0: (Int, chap6b.Machine) = (3,Machine(false,8,3))
+	def simulateMachineNonMonadic(inputs: List[Input])(initialMachine: Machine): (Int, Machine) = {
+		val result = inputs.foldRight(initialMachine) { rules(_)(_)	 }
+		(result.coins, result)
+	}                                         //> simulateMachineNonMonadic: (inputs: List[chap6b.Input])(initialMachine: cha
+                                                  //| p6b.Machine)(Int, chap6b.Machine)
+                                                  
+  val inputs = Coin :: Turn :: Coin :: Turn :: Coin :: Nil
+                                                  //> inputs  : List[Product with Serializable with chap6b.Input] = List(Coin, Tu
+                                                  //| rn, Coin, Turn, Coin)
+                                                    
+  simulateMachine(inputs).run(initialMachine)     //> res0: (Int, chap6b.Machine) = (3,Machine(false,8,3))
+  simulateMachineNonMonadic(inputs)(initialMachine)
+                                                  //> res1: (Int, chap6b.Machine) = (3,Machine(false,8,3))
 }
