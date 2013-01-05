@@ -9,31 +9,31 @@ object chap6b {
   val initialMachine = new Machine(true, 10, 0)   //> initialMachine  : chap6b.Machine = Machine(true,10,0)
   
   object CandyLeft {
- 		def unapply(candies: Int) = candies > 0
+     def unapply(candies: Int) = candies > 0
   }
   
   def rules(input: Input)(machine:Machine): Machine = (input, machine) match {
-  	case (Coin, m@Machine(true, CandyLeft(), _)) =>
-  		m.copy(locked=false, coins=m.coins+1)
-  	case (Turn, m@Machine(false, CandyLeft(), _)) =>
-  		m.copy(locked=true, candies=m.candies-1)
-  	case (_, m) => m
+    case (Coin, m@Machine(true, CandyLeft(), _)) =>
+      m.copy(locked=false, coins=m.coins+1)
+    case (Turn, m@Machine(false, CandyLeft(), _)) =>
+      m.copy(locked=true, candies=m.candies-1)
+    case (_, m) => m
   }                                               //> rules: (input: chap6b.Input)(machine: chap6b.Machine)chap6b.Machine
 
-	def simulateMachine(inputs: List[Input]): State[Machine, Int] = {
-	  for {
-	  	_ <-	sequence(inputs.map {input =>
-	  	 	modify[Machine] (rules(input))
-	  	})
-			m <- getState
-	  } yield m.coins
-	}                                         //> simulateMachine: (inputs: List[chap6b.Input])chapter6.StateMonad.State[chap6
+  def simulateMachine(inputs: List[Input]): State[Machine, Int] = {
+    for {
+      _ <-  sequence(inputs.map {input =>
+         modify[Machine] (rules(input))
+      })
+      m <- getState
+    } yield m.coins
+  }                                         //> simulateMachine: (inputs: List[chap6b.Input])chapter6.StateMonad.State[chap6
                                                   //| b.Machine,Int]
                                                   
-	def simulateMachineNonMonadic(inputs: List[Input])(initialMachine: Machine): (Int, Machine) = {
-		val result = inputs.foldRight(initialMachine) { rules(_)(_)	 }
-		(result.coins, result)
-	}                                         //> simulateMachineNonMonadic: (inputs: List[chap6b.Input])(initialMachine: cha
+  def simulateMachineNonMonadic(inputs: List[Input])(initialMachine: Machine): (Int, Machine) = {
+    val result = inputs.foldRight(initialMachine) { rules(_)(_)   }
+    (result.coins, result)
+  }                                         //> simulateMachineNonMonadic: (inputs: List[chap6b.Input])(initialMachine: cha
                                                   //| p6b.Machine)(Int, chap6b.Machine)
                                                   
   val inputs = Coin :: Turn :: Coin :: Turn :: Coin :: Nil
