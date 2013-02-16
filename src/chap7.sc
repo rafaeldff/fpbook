@@ -7,7 +7,7 @@ object chap7 {
     def get[T](p: Par[T]): T = ???
     def map2[A, B, R](a: Par[A], b: Par[B])(f: (A,B)=>R): Par[R] = ???
     
-    def fork[A](a: => A): A = ???
+    def fork[A](a: => Par[A]): Par[A] = ???
     def async[A](a: => A): Par[A] = fork(unit(a))
   }
 
