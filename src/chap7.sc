@@ -5,7 +5,7 @@ object chap7 {
   object Par {
     def unit[T](t: => T): Par[T] = ???
     def get[T](p: Par[T]): T = ???
-    def map2[A, B, R](a: Par[A], b: Par[B])(f: (A,B)=>R): Par[R] = ???
+    def map2[A, B, R](a: => Par[A], b: => Par[B])(f: (A,B)=>R): Par[R] = ???
   }
 
   def sum(as: IndexedSeq[Int]): Par[Int] =
