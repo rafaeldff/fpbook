@@ -39,6 +39,16 @@ object chap7 {
     	val parList: List[Par[B]] = l.map(asyncF(f))
     	sequence(parList)
     }
+    
+    def parFilter[A](l:List[A])(f: A => Boolean):Par[List[A]] = fork {
+      val parBools: List[Par[Boolean]] = l map asyncF(f)
+      val paired: List[(A, Par[Boolean])] = l zip parBools
+      val res: Par[List[A]] = paired.foldRight(unit(Nil:List[A])) {(pair:(A,Par[Boolean]), pla:Par[List[A]]) =>
+        val (a, pb:Par[Boolean]) = pair
+    	  map2(pb, pla){(b,la) => if (b) a :: la else la}
+    	}
+    	res
+    }
       
   }
 
@@ -58,7 +68,7 @@ object chap7 {
                                                   //| re[Int] = <function1>
   
   val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@47f3ed7f
+                                                  //| n$1@2124532
                                                   
                                                   
                                                   
