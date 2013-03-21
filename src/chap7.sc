@@ -29,6 +29,15 @@ object chap7 {
     def asyncF[A,B](f: A => B): A => Par[B] = {(a:A) => async(f(a))}
     
     def run[T](p: Par[T])(pool: ExecutorService): Future[T] = p(pool)
+    
+    def parMap[A,B](l:List[A])(f: A=>B):Par[List[B]] = {
+    	val parList: List[Par[B]] = l.map(asyncF(f))
+    	parList.foldRight(unit(Nil:List[B])) {(pb,plb) =>
+    	  map2(pb, plb){(b,lb) => b :: lb}
+    	}
+    }
+      
+      
   }
 
   def sum(as: IndexedSeq[Int]): Par[Int] =
@@ -41,13 +50,13 @@ object chap7 {
                                                   //| .concurrent.Future[Int]
     
   val pool = Executors.newFixedThreadPool(4)      //> pool  : java.util.concurrent.ExecutorService = java.util.concurrent.ThreadP
-                                                  //| oolExecutor@26830cbb[Running, pool size = 0, active threads = 0, queued tas
+                                                  //| oolExecutor@6cf5b81a[Running, pool size = 0, active threads = 0, queued tas
                                                   //| ks = 0, completed tasks = 0]
   val parSum = sum(0 to 10)                       //> parSum  : java.util.concurrent.ExecutorService => java.util.concurrent.Futu
                                                   //| re[Int] = <function1>
   
   val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@32db96ac
+                                                  //| n$1@608e14b7
                                                   
                                                   
                                                   
@@ -55,7 +64,7 @@ object chap7 {
                                                   //> CALLER: 1
   println(future.get)                             //> 55
   
-  val f: Int => Int = {i => /*Thread.sleep(2*1000);*/ i * i }
+  val f: Int => Int = {i => /*Thread.sleep(2*1000)*/; i * i }
                                                   //> f  : Int => Int = <function1>
                                                   
   println("bef")                                  //> bef
@@ -64,6 +73,13 @@ object chap7 {
   println("aft")                                  //> aft
   
   Par.run(af)(pool).get                           //> res0: Int = 100
+  
+  println("bef")                                  //> bef
+  val r = Par.parMap(List(1,2,3,4,5))(f)          //> r  : java.util.concurrent.ExecutorService => java.util.concurrent.Future[Li
+                                                  //| st[Int]] = <function1>
+  println("aft")                                  //> aft
+  Par.run(r)(pool).get                            //> res1: List[Int] = List(1, 4, 9, 16, 25)
+  println("end")                                  //> end
   
   pool.shutdown()
 }
