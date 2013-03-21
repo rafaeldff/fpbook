@@ -14,9 +14,10 @@ object chap7 {
     	}
     }
     
-    def map2[A, B, R](a: Par[A], b: Par[B])(f: (A, B) => R): Par[R] =  {executorService =>
-    	unit(f(a(executorService).get, b(executorService).get))(executorService)
-    }
+    def product[A,B](fa: Par[A], fb: Par[B]): Par[(A,B)] = {executorService => unit( (fa(executorService).get, fb(executorService).get) )(executorService)  }
+		def map[A,B](pa: Par[A])(f: A => B): Par[B] = {executorService => unit(f(pa(executorService).get))(executorService)}
+    
+    def map2[A, B, R](a: Par[A], b: Par[B])(f: (A, B) => R): Par[R] =  map(product(a,b)){case (va,vb) => f(va,vb)}
     
     def fork[A](a: => Par[A]): Par[A] = {executorService =>
       val f: Future[A] = executorService.submit(new Callable[A] {def call:A = a(executorService).get })
@@ -46,12 +47,13 @@ object chap7 {
                                                   //| re[Int] = <function1>
   
   val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@76d697d9
+                                                  //| n$1@32db96ac
                                                   
                                                   
                                                   
   println(s"CALLER: ${Thread.currentThread.getId}")
                                                   //> CALLER: 1
+  println(future.get)                             //> 55
   
   val f: Int => Int = {i => /*Thread.sleep(2*1000);*/ i * i }
                                                   //> f  : Int => Int = <function1>
