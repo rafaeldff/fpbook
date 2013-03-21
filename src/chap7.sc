@@ -30,7 +30,7 @@ object chap7 {
     
     def run[T](p: Par[T])(pool: ExecutorService): Future[T] = p(pool)
     
-    def parMap[A,B](l:List[A])(f: A=>B):Par[List[B]] = {
+    def parMap[A,B](l:List[A])(f: A=>B):Par[List[B]] = fork {
     	val parList: List[Par[B]] = l.map(asyncF(f))
     	sequence(parList)
     }
