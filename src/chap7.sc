@@ -32,11 +32,13 @@ object chap7 {
     
     def parMap[A,B](l:List[A])(f: A=>B):Par[List[B]] = {
     	val parList: List[Par[B]] = l.map(asyncF(f))
-    	parList.foldRight(unit(Nil:List[B])) {(pb,plb) =>
-    	  map2(pb, plb){(b,lb) => b :: lb}
-    	}
+    	sequence(parList)
     }
       
+    def sequence[A](l: List[Par[A]]):Par[List[A]] =
+    	l.foldRight(unit(Nil:List[A])) {(pb,plb) =>
+    	  map2(pb, plb){(b,lb) => b :: lb}
+    	}
       
   }
 
@@ -56,7 +58,7 @@ object chap7 {
                                                   //| re[Int] = <function1>
   
   val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@608e14b7
+                                                  //| n$1@47f3ed7f
                                                   
                                                   
                                                   
@@ -64,7 +66,7 @@ object chap7 {
                                                   //> CALLER: 1
   println(future.get)                             //> 55
   
-  val f: Int => Int = {i => /*Thread.sleep(2*1000)*/; i * i }
+  val f: Int => Int = {i => /*Thread.sleep(2*1000);*/ i * i }
                                                   //> f  : Int => Int = <function1>
                                                   
   println("bef")                                  //> bef
