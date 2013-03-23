@@ -19,6 +19,24 @@ object chap7 {
     
     def map2[A, B, R](a: Par[A], b: Par[B])(f: (A, B) => R): Par[R] =  map(product(a,b)){case (va,vb) => f(va,vb)}
     
+    def map3[A,R](pa: Par[A], pb: Par[A], pc: Par[A])(f: (A, A, A) => R): Par[R] = {
+    	val papb: Par[(A,A)] = map2(pa, pb) {(a,b) => (a,b)}
+    	map2(papb, pc) {(ab, c) => val (a,b) = ab; f(a, b, c) }
+    }
+    
+    def map4[A,R](pa: Par[A], pb: Par[A], pc: Par[A], pd: Par[A])(f: (A, A, A, A) => R): Par[R] = {
+    	val papb: Par[(A,A)] = map2(pa, pb) {(a,b) => (a,b)}
+    	val papbpc: Par[(A,A,A)] = map2(papb, pc) {(ab, c) => val (a,b) = ab; (a,b,c)}
+    	map2(papbpc, pd) {(abc, d) => val (a,b,c) = abc; f(a, b, c, d) }
+    }
+    
+    def map5[A,R](pa: Par[A], pb: Par[A], pc: Par[A], pd: Par[A], pe: Par[A])(f: (A, A, A, A, A) => R): Par[R] = {
+    	val papb: Par[(A,A)] = map2(pa, pb) {(a,b) => (a,b)}
+    	val papbpc: Par[(A,A,A)] = map2(papb, pc) {(ab, c) => val (a,b) = ab; (a,b,c)}
+    	val papbpcpd: Par[(A,A,A,A)] = map2(papbpc, pd) {(abc, d) => val (a,b, c) = abc; (a,b,c,d)}
+    	map2(papbpcpd, pe) {(abcd, e) => val (a,b,c,d) = abcd; f(a, b, c, d, e) }
+    }
+    
     def fork[A](a: => Par[A]): Par[A] = {executorService =>
       val f: Future[A] = executorService.submit(new Callable[A] {def call:A = a(executorService).get })
 			f
@@ -82,7 +100,7 @@ object chap7 {
                                                   //| re[Int] = <function1>
   
   val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@64045f57
+                                                  //| n$1@3b2f1ce2
                                                   
                                                  
                                                   
