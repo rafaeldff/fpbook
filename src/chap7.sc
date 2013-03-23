@@ -52,23 +52,37 @@ object chap7 {
       
   }
 
-  def sum(as: IndexedSeq[Int]): Par[Int] =
+  def sum0(as: IndexedSeq[Int]): Par[Int] =
     if (as.size <= 1) {Par.unit(as.headOption getOrElse 0)}
     else {
       val (l, r) = as.splitAt(as.length / 2)
       //println(s"l=$l r=$r THREAD ${Thread.currentThread.getId}")
-      Par.map2(Par.fork(sum(l)), Par.fork(sum(r)))(_ + _)
-    }                                             //> sum: (as: IndexedSeq[Int])java.util.concurrent.ExecutorService => java.util
-                                                  //| .concurrent.Future[Int]
+      Par.map2(Par.fork(sum0(l)), Par.fork(sum0(r)))(_ + _)
+    }                                             //> sum0: (as: IndexedSeq[Int])java.util.concurrent.ExecutorService => java.uti
+                                                  //| l.concurrent.Future[Int]
+                                                  
+  def fold[A,B](as: IndexedSeq[A])(g: A => B)(f: (B,B) => B): Par[B] =
+    if (as.size <= 1) {Par.unit(g(as.head))}
+    else {
+      val (l, r) = as.splitAt(as.length / 2)
+      //println(s"l=$l r=$r THREAD ${Thread.currentThread.getId}")
+      val res: Par[B] = Par.map2(Par.fork(fold(l)(g)(f)), Par.fork(fold(r)(g)(f)))(f) ;
+      res
+    }                                             //> fold: [A, B](as: IndexedSeq[A])(g: A => B)(f: (B, B) => B)java.util.concurr
+                                                  //| ent.ExecutorService => java.util.concurrent.Future[B]
+    
+  def sum = {(l:IndexedSeq[Int]) => fold(l)(identity[Int])(_+_) }
+                                                  //> sum: => IndexedSeq[Int] => (java.util.concurrent.ExecutorService => java.ut
+                                                  //| il.concurrent.Future[Int])
     
   val pool = Executors.newFixedThreadPool(4)      //> pool  : java.util.concurrent.ExecutorService = java.util.concurrent.ThreadP
-                                                  //| oolExecutor@6cf5b81a[Running, pool size = 0, active threads = 0, queued tas
+                                                  //| oolExecutor@67ce0f36[Running, pool size = 0, active threads = 0, queued tas
                                                   //| ks = 0, completed tasks = 0]
   val parSum = sum(0 to 10)                       //> parSum  : java.util.concurrent.ExecutorService => java.util.concurrent.Futu
                                                   //| re[Int] = <function1>
   
   val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@2124532
+                                                  //| n$1@64045f57
                                                   
                                                  
                                                   
