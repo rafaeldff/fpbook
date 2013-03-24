@@ -4,7 +4,7 @@ object chap7 {
   type  Par[T] = ExecutorService => Future[T]
 
   object Par {
-    def unit[A](a: A): Par[A] = {_ =>
+    private def resolved[A](a: =>A): Future[A] =
     	new Future[A] {
     	  def get = a
     	  def get(timeout:Long,unit:TimeUnit) = a
@@ -12,10 +12,17 @@ object chap7 {
     	  def isDone = true
     	  def cancel(ignored: Boolean) = false
     	}
+     
+    def unit[A](a: A): Par[A] = {_ =>
+    	resolved(a)
     }
     
     def product[A,B](fa: Par[A], fb: Par[B]): Par[(A,B)] = {executorService => unit( (fa(executorService).get, fb(executorService).get) )(executorService)  }
 		def map[A,B](pa: Par[A])(f: A => B): Par[B] = {executorService => unit(f(pa(executorService).get))(executorService)}
+		
+		def flatMap[A,R](pa: Par[A])(f: A => Par[R]): Par[R] = {executorService =>
+			f(pa(executorService).get)(executorService)
+		}
     
     def map2[A, B, R](a: Par[A], b: Par[B])(f: (A, B) => R): Par[R] =  map(product(a,b)){case (va,vb) => f(va,vb)}
     
@@ -40,6 +47,11 @@ object chap7 {
     def fork[A](a: => Par[A]): Par[A] = {executorService =>
       val f: Future[A] = executorService.submit(new Callable[A] {def call:A = a(executorService).get })
 			f
+    }
+    
+    
+    def choice[A](pa: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] = {
+      flatMap(pa) {a => if (a) ifTrue else ifFalse }
     }
     
     def async[A](a: => A): Par[A] = fork(unit(a))
@@ -67,6 +79,9 @@ object chap7 {
 			  pairs.flatMap {case (a, true) => List(a); case _ => List()}
 			}
     }
+    
+    def equal[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
+			p(e).get == p2(e).get
       
   }
 
@@ -92,15 +107,22 @@ object chap7 {
   def sum = {(l:IndexedSeq[Int]) => fold(l)(identity[Int])(_+_) }
                                                   //> sum: => IndexedSeq[Int] => (java.util.concurrent.ExecutorService => java.ut
                                                   //| il.concurrent.Future[Int])
+  
+  val a = Par.async(42+1)                         //> a  : java.util.concurrent.ExecutorService => java.util.concurrent.Future[In
+                                                  //| t] = <function1>
+  val S = Executors.newFixedThreadPool(1)         //> S  : java.util.concurrent.ExecutorService = java.util.concurrent.ThreadPool
+                                                  //| Executor@233d0d04[Running, pool size = 0, active threads = 0, queued tasks 
+                                                  //| = 0, completed tasks = 0]
+                                                  
+  //Par.run(Par.fork  (a))(S).get
     
   val pool = Executors.newFixedThreadPool(4)      //> pool  : java.util.concurrent.ExecutorService = java.util.concurrent.ThreadP
-                                                  //| oolExecutor@67ce0f36[Running, pool size = 0, active threads = 0, queued tas
+                                                  //| oolExecutor@7d2193ae[Running, pool size = 0, active threads = 0, queued tas
                                                   //| ks = 0, completed tasks = 0]
   val parSum = sum(0 to 10)                       //> parSum  : java.util.concurrent.ExecutorService => java.util.concurrent.Futu
                                                   //| re[Int] = <function1>
   
-  val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anonfun$unit$1$$ano
-                                                  //| n$1@3b2f1ce2
+  val future = Par.run(parSum)(pool)              //> future  : java.util.concurrent.Future[Int] = chap7$Par$$anon$1@2470b02c
                                                   
                                                  
                                                   
