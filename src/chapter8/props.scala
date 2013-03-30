@@ -35,7 +35,7 @@ trait props extends Randoms {
     }
     
     def choose(from:Int, to:Int): Gen[Int] =  
-      (randomInterval(from, to), Stream.Empty)
+      (randomInterval(from, to), Stream.from(from).take(to-from))
 
     private def rand[A](n: Int, g: Gen[A]): Rand[List[A]] =
       if (n <= 0)
@@ -48,7 +48,9 @@ trait props extends Randoms {
     
       
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
-      (rand(n, g), Stream.empty)
+      val exaustiveN: Stream[A] = g._2.take(n)
+      val permutations: Iterator[List[A]] = exaustiveN.permutations.map(_.toList)
+      (rand(n, g), permutations.toStream)
     }
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
