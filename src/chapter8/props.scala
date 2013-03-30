@@ -1,8 +1,10 @@
 package chapter8
-import chapter6.StateMonad
+import chapter6.{StateMonad, Randoms}
 
-trait props {
+trait props extends Randoms {
   import StateMonad._
+  import Randoms._
+  
   
   type SuccessCount = Int
   type FailedCase = String
@@ -19,11 +21,18 @@ trait props {
   }
   
   object Gen {
-    def choose(from:Int, to:Int):Gen[Int] = ???
+    private def randomInterval(from:Int, to:Int): Rand[Int] = { 
+      val range = to - from
+      nextDouble.map {d => ((d * range) + from).toInt }
+    }
+    
+    def choose(from:Int, to:Int): Gen[Int] =  
+      randomInterval(from, to)
+    
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
   
-  trait Gen[A]
+  type Gen[A] = State[RNG, A]
   
   def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
 }
