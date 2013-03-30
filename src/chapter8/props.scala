@@ -37,20 +37,21 @@ trait props extends Randoms {
     def choose(from:Int, to:Int): Gen[Int] =  
       (randomInterval(from, to), Stream.from(from).take(to-from))
 
-    private def rand[A](n: Int, g: Gen[A]): Rand[List[A]] =
+    private def between[A](n: Int, g: Gen[A]): Rand[List[A]] =
       if (n <= 0)
         StateMonad.unit(Nil)
       else {
         val ra  : Rand[A] = g._1
-        val rest: Rand[List[A]] = rand(n-1, g)
+        val rest: Rand[List[A]] = between(n-1, g)
         StateMonad.map2(ra, rest) {(a, la) => a :: la}
       }
     
       
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
-      val exaustiveN: Stream[A] = g._2.take(n)
+      val exaustiveN: Stream[A] = 
+        Stream.continually(g._2).flatten.take(n)
       val permutations: Iterator[List[A]] = exaustiveN.permutations.map(_.toList)
-      (rand(n, g), permutations.toStream)
+      (between(n, g), permutations.toStream)
     }
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
