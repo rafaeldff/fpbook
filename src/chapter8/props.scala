@@ -1,6 +1,9 @@
 package chapter8
+import chapter6.StateMonad
 
 trait props {
+  import StateMonad._
+  
   type SuccessCount = Int
   type FailedCase = String
 
@@ -14,4 +17,13 @@ trait props {
       
     }
   }
+  
+  object Gen {
+    def choose(from:Int, to:Int):Gen[Int] = ???
+    def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
+  }
+  
+  trait Gen[A]
+  
+  def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
 }
