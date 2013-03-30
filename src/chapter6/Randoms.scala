@@ -2,7 +2,7 @@ package chapter6
 
 trait Randoms {
   import StateMonad._
-  
+
   trait RNG {
     def nextInt: (Int, RNG)
   }
@@ -19,9 +19,10 @@ trait Randoms {
   type Rand[+A] = State[RNG, A]
 
   val nextInt: Rand[Int] = State(rng => rng.nextInt)
-  
+
   def nextDouble: Rand[Double] =
     nextInt.map { randomInt => randomInt.abs.toDouble / Int.MaxValue }
+  
 }
 
 object Randoms extends Randoms

@@ -32,4 +32,10 @@ object StateMonad {
 
     loop(fs)
   }
+  
+  def map2[S, A, B, C](ra: State[S, A], rb: State[S, B])(f: (A, B) => C): State[S, C] =
+    for {
+      a <- ra
+      b <- rb
+    } yield f(a, b)
 }

@@ -21,18 +21,40 @@ trait props extends Randoms {
   }
   
   object Gen {
+    def unit[A](a: => A): Gen[A] =
+      (StateMonad.unit(a), Stream(a))
+    
+    private def randomBoolean: Rand[Boolean] =
+      nextInt.map {i => i % 2 == 0}
+    
+    def boolean: Gen[Boolean] = (randomBoolean, Stream(true,false))
+    
     private def randomInterval(from:Int, to:Int): Rand[Int] = { 
       val range = to - from
       nextDouble.map {d => ((d * range) + from).toInt }
     }
     
     def choose(from:Int, to:Int): Gen[Int] =  
-      randomInterval(from, to)
+      (randomInterval(from, to), Stream.Empty)
+
+    private def rand[A](n: Int, g: Gen[A]): Rand[List[A]] =
+      if (n <= 0)
+        StateMonad.unit(Nil)
+      else {
+        val ra  : Rand[A] = g._1
+        val rest: Rand[List[A]] = rand(n-1, g)
+        StateMonad.map2(ra, rest) {(a, la) => a :: la}
+      }
+    
+      
+    def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
+      (rand(n, g), Stream.empty)
+    }
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
   
-  type Gen[A] = State[RNG, A]
+  type Gen[A] = (State[RNG, A],  Stream[A])
   
   def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
 }
