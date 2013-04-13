@@ -47,14 +47,19 @@ trait props extends Randoms {
       }
     
     def combinations[A](size: Int, chooseFrom: Stream[A]): Stream[Stream[A]] = {
-      chooseFrom.sliding(size).map(_.permutations).flatten.toStream  
+      chooseFrom.permutations.toStream.map(_.take(size)).distinct
     }
-      
+    
+    def clampDown[A](n: Int, s:Stream[A]): Stream[A] = {
+      val firstN = s.take(n)
+      if (firstN.size == n)
+        s
+      else
+        Stream.continually(s).flatten.take(n)
+    }
+    
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
-      val exaustiveN: Stream[A] = 
-        Stream.continually(g._2).flatten.take(n)
-      val permutations: Iterator[List[A]] = exaustiveN.permutations.map(_.toList)
-      (between(n, g), permutations.toStream)
+      (between(n, g), combinations(n, clampDown(n, g._2)).map(_.toList))
     }
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
