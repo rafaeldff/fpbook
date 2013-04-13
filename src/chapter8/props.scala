@@ -46,6 +46,9 @@ trait props extends Randoms {
         StateMonad.map2(ra, rest) {(a, la) => a :: la}
       }
     
+    def combinations[A](size: Int, chooseFrom: Stream[A]): Stream[Stream[A]] = {
+      chooseFrom.sliding(size).map(_.permutations).flatten.toStream  
+    }
       
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
       val exaustiveN: Stream[A] = 
