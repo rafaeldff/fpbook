@@ -88,23 +88,14 @@ trait props extends Randoms {
       Gen(between(n, g), exhaustive)
     }
     
-    private def nextPair: State[RNG, (Int,Int)] = 
-      for (a <- nextInt; b <- nextInt) yield (a,b)
-      
+    def int: Gen[Int] =
+      Gen(nextInt, unbounded)
+    
     def pair: Gen[(Int,Int)] = 
-      Gen(nextPair, unbounded)
+      pairOf(int, int)
       
-    def pairOf[A,B](ga: Gen[A], gb:Gen[B]): Gen[(A,B)] = {
-      val randPair = for (
-        a <- ga.sample;
-        b <- gb.sample
-      ) yield (a,b)
-      
-      val allPairs = cross(ga.exhaustive, gb.exhaustive) 
-        
-      Gen(randPair, allPairs)
-    }
-      
+    def pairOf[A,B](ga: Gen[A], gb:Gen[B]): Gen[(A,B)] =
+      for (a <- ga; b <- gb) yield (a,b)
     
     def uniform: Gen[Double] = 
       Gen(nextDouble, unbounded)
@@ -115,7 +106,25 @@ trait props extends Randoms {
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
   
-  case class Gen[+A](sample: State[RNG, A],  exhaustive:Stream[Option[A]])
-  
+  case class Gen[+A](sample: State[RNG, A],  exhaustive:Stream[Option[A]]) {
+    def map[B](f: A => B): Gen[B] = {
+      val sampleB = sample.map(f)
+      val exhaustiveB = exhaustive.map {
+        case None => None
+        case Some(a) => Some(f(a))
+      }
+      Gen(sampleB, exhaustiveB)
+    }
+    
+    def flatMap[B](f: A => Gen[B]): Gen[B] = {
+      val sampleB = sample.flatMap (f andThen (_.sample))
+      val exhaustiveB = exhaustive.flatMap{
+        case None => Stream(None) 
+        case Some(a) => f(a).exhaustive
+      }
+      Gen(sampleB, exhaustiveB)
+    }
+  }
+
   def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
 }
