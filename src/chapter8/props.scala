@@ -105,6 +105,14 @@ trait props extends Randoms {
       
     def choose(i: Double, j:Double): Gen[Double] =
       for (d <- uniform) yield i + d*(j-i)
+      
+    def sameParity(from:Int, to:Int): Gen[(Int,Int)] = 
+      pairOf(choose(from,to), choose(from,to)).map{ case (n,m) =>
+        if (n % 2 == m % 2)
+          (n,m)
+        else
+          (n, m+1)
+      }
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
@@ -127,6 +135,9 @@ trait props extends Randoms {
       }
       Gen(sampleB, exhaustiveB)
     }
+    
+    def listOfN(size: Gen[Int]): Gen[List[A]] =
+      size.flatMap { n => Gen.listOfN(n, this)}
   }
 
   def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
