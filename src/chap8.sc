@@ -4,10 +4,10 @@ object chap8 extends props {
 	import Streams._
 	
   val propTrue = new Prop { def check = Right(1) }//> propTrue  : chap8.Prop{def check: scala.util.Right[Nothing,Int]} = chap8$$an
-                                                  //| onfun$main$1$$anon$1@5f159092
+                                                  //| onfun$main$1$$anon$1@6083969e
   val propFalse = new Prop { def check = Left("err") }
                                                   //> propFalse  : chap8.Prop{def check: scala.util.Left[String,Nothing]} = chap8$
-                                                  //| $anonfun$main$1$$anon$2@3851a89
+                                                  //| $anonfun$main$1$$anon$2@222e2517
   
   propTrue.check                                  //> res0: scala.util.Right[Nothing,Int] = Right(1)
   propFalse.check                                 //> res1: scala.util.Left[String,Nothing] = Left(err)
@@ -48,14 +48,14 @@ object chap8 extends props {
   printGen( Gen.pairOf(Gen.boolean) )             //> Gen((false,true),[Some((true,true)),Some((true,false)),Some((false,true)),S
                                                   //| ome((false,false))])
                                                   
-  printGen( Gen.pairOf(Gen.uniform) )             //> Gen((0.1809542948291424,0.5568913326397964),[])
+  printGen( Gen.pairOf(Gen.uniform) )             //> Gen((0.1809542948291424,0.5568913326397964),[None])
   
   
   cross(Stream(Some(1)), Stream(Some(2))).mkString//> res6: String = Some((1,2))
   cross(Stream(Some(1),Some(10)), Stream(Some(2),Some(20))).mkString
                                                   //> res7: String = Some((1,2))Some((1,20))Some((10,2))Some((10,20))
   cross(Stream(Some(1),None), Stream(Some(2),Some(20))).mkString
-                                                  //> res8: String = Some((1,2))Some((1,20))
+                                                  //> res8: String = Some((1,2))Some((1,20))NoneNone
   
   /*
  

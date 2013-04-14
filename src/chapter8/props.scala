@@ -25,7 +25,10 @@ trait props extends Randoms {
       }}
     
     def cross[A,B](soa: Stream[Option[A]], sob: Stream[Option[B]] ): Stream[Option[(A,B)]] =
-      for (Some(oa) <- soa; Some(ob) <- sob) yield Some((oa, ob))
+      for (oa <- soa; ob <- sob) yield (oa, ob) match {
+        case (Some(a), Some(b)) => Some((a, b))
+        case _ => None
+      }
       
     
     def bounded[A](a:Stream[A]):Stream[Option[A]] =
