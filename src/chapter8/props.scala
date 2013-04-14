@@ -101,7 +101,7 @@ trait props extends Randoms {
       Gen(nextDouble, unbounded)
       
     def choose(i: Double, j:Double): Gen[Double] =
-      Gen(nextDouble.map{d => i + d*(j-i)}, unbounded)
+      for (d <- uniform) yield i + d*(j-i)
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
