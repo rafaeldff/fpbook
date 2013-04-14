@@ -4,6 +4,21 @@ import chapter6.{StateMonad, Randoms}
 trait props extends Randoms {
   import StateMonad._
   import Randoms._
+
+  object Streams {
+    def combinations[A](size: Int, chooseFrom: Stream[A]): Stream[Stream[A]] = {
+      chooseFrom.permutations.toStream.map(_.take(size)).distinct
+    }
+
+    def clampDown[A](n: Int, s: Stream[A]): Stream[A] = {
+      val firstN = s.take(n)
+      if (firstN.size == n)
+        s
+      else
+        Stream.continually(s).flatten.take(n)
+    }
+
+  }
   
   
   type SuccessCount = Int
@@ -21,6 +36,8 @@ trait props extends Randoms {
   }
   
   object Gen {
+    import Streams._
+    
     def unit[A](a: => A): Gen[A] =
       (StateMonad.unit(a), Stream(a))
     
@@ -46,17 +63,6 @@ trait props extends Randoms {
         StateMonad.map2(ra, rest) {(a, la) => a :: la}
       }
     
-    def combinations[A](size: Int, chooseFrom: Stream[A]): Stream[Stream[A]] = {
-      chooseFrom.permutations.toStream.map(_.take(size)).distinct
-    }
-    
-    def clampDown[A](n: Int, s:Stream[A]): Stream[A] = {
-      val firstN = s.take(n)
-      if (firstN.size == n)
-        s
-      else
-        Stream.continually(s).flatten.take(n)
-    }
     
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
       (between(n, g), combinations(n, clampDown(n, g._2)).map(_.toList))

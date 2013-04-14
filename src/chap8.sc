@@ -1,12 +1,13 @@
 import chapter8._
 
 object chap8 extends props {
+	import Streams._
 	
   val propTrue = new Prop { def check = Right(1) }//> propTrue  : chap8.Prop{def check: scala.util.Right[Nothing,Int]} = chap8$$an
-                                                  //| onfun$main$1$$anon$1@7da3f9e4
+                                                  //| onfun$main$1$$anon$1@365474b4
   val propFalse = new Prop { def check = Left("err") }
                                                   //> propFalse  : chap8.Prop{def check: scala.util.Left[String,Nothing]} = chap8$
-                                                  //| $anonfun$main$1$$anon$2@16daece7
+                                                  //| $anonfun$main$1$$anon$2@43b64611
  
  
   
@@ -64,31 +65,30 @@ object chap8 extends props {
                                                   //> p: [T](s: Stream[Stream[T]])scala.collection.immutable.Stream[scala.collect
                                                   //| ion.immutable.Stream[T]]
                                                     
-  p( Gen.combinations(1, Stream(1)) )             //> res4: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
+  p( combinations(1, Stream(1)) )                 //> res4: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
                                                   //| nt]] = Stream(Stream(1))
-  p( Gen.combinations(1, Stream(1,2)) )           //> res5: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
+  p( combinations(1, Stream(1,2)) )               //> res5: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
                                                   //| nt]] = Stream(Stream(1), Stream(2))
   
-  p( Gen.combinations(2, Stream(1,2)) )           //> res6: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
+  p( combinations(2, Stream(1,2)) )               //> res6: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
                                                   //| nt]] = Stream(Stream(1, 2), Stream(2, 1))
   
-  p( Gen.combinations(2, Stream(1,2,3,4)) )       //> res7: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
+  p( combinations(2, Stream(1,2,3,4)) )           //> res7: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
                                                   //| nt]] = Stream(Stream(1, 2), Stream(1, 3), Stream(1, 4), Stream(2, 1), Strea
                                                   //| m(2, 3), Stream(2, 4), Stream(3, 1), Stream(3, 2), Stream(3, 4), Stream(4, 
                                                   //| 1), Stream(4, 2), Stream(4, 3))
-                                                  
-  p( Gen.combinations(3, Stream.from(1).take(10)) )
-                                                  //> res8: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
+                                              
+  p( combinations(3, Stream.from(1).take(10)) )   //> res8: scala.collection.immutable.Stream[scala.collection.immutable.Stream[I
                                                   //| nt]] = Stream(Stream(1, 2, 3), Stream(1, 2, 4), Stream(1, 2, 5), Stream(1, 
                                                   //| 2, 6), Stream(1, 2, 7), Stream(1, 2, 8), Stream(1, 2, 9), Stream(1, 2, 10),
                                                   //|  Stream(1, 3, 2), Stream(1, 3, 4), Stream(1, 3, 5), Stream(1, 3, 6), Stream
                                                   //| (1, 3, 7), Stream(1, 3, 8), Stream(1, 3, 9), Stream(1, 3, 10), Stream(1, 4,
                                                   //|  2), Stream(1, 4, 3), Stream(1, 4, 5), Stream(1, 4, 6))
  
- Gen.clampDown(1, Stream(1,2)).take(10).force     //> res9: scala.collection.immutable.Stream[Int] = Stream(1, 2)
- Gen.clampDown(2, Stream(1,2)).take(10).force     //> res10: scala.collection.immutable.Stream[Int] = Stream(1, 2)
- Gen.clampDown(3, Stream(1,2)).take(10).force     //> res11: scala.collection.immutable.Stream[Int] = Stream(1, 2, 1)
- Gen.clampDown(3, Stream.from(1)).take(10).force  //> res12: scala.collection.immutable.Stream[Int] = Stream(1, 2, 3, 4, 5, 6, 7,
+  clampDown(1, Stream(1,2)).take(10).force        //> res9: scala.collection.immutable.Stream[Int] = Stream(1, 2)
+  clampDown(2, Stream(1,2)).take(10).force        //> res10: scala.collection.immutable.Stream[Int] = Stream(1, 2)
+  clampDown(3, Stream(1,2)).take(10).force        //> res11: scala.collection.immutable.Stream[Int] = Stream(1, 2, 1)
+  clampDown(3, Stream.from(1)).take(10).force     //> res12: scala.collection.immutable.Stream[Int] = Stream(1, 2, 3, 4, 5, 6, 7,
                                                   //|  8, 9, 10)
  
  
