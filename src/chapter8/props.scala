@@ -26,6 +26,8 @@ trait props extends Randoms {
     
     def bounded[A](a:Stream[A]):Stream[Option[A]] =
       a map (Some(_))
+    
+    def unbounded[A]: Stream[Option[A]] = Stream(None)
   }
   
   
@@ -79,6 +81,12 @@ trait props extends Randoms {
       
       (between(n, g), exhaustive)
     }
+    
+    def uniform: Gen[Double] = 
+      (nextDouble, unbounded)
+      
+    def choose(i: Double, j:Double) =
+      (nextDouble.map{d => i + d*(j-i)}, unbounded)
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
