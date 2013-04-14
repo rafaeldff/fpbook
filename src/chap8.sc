@@ -4,10 +4,10 @@ object chap8 extends props {
 	import Streams._
 	
   val propTrue = new Prop { def check = Right(1) }//> propTrue  : chap8.Prop{def check: scala.util.Right[Nothing,Int]} = chap8$$an
-                                                  //| onfun$main$1$$anon$1@59e62b84
+                                                  //| onfun$main$1$$anon$1@5f5cc764
   val propFalse = new Prop { def check = Left("err") }
                                                   //> propFalse  : chap8.Prop{def check: scala.util.Left[String,Nothing]} = chap8$
-                                                  //| $anonfun$main$1$$anon$2@69a87caa
+                                                  //| $anonfun$main$1$$anon$2@142436ac
   
   propTrue.check                                  //> res0: scala.util.Right[Nothing,Int] = Right(1)
   propFalse.check                                 //> res1: scala.util.Left[String,Nothing] = Left(err)

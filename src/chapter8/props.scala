@@ -57,6 +57,9 @@ trait props extends Randoms {
     
     def unit[A](a: => A): Gen[A] =
       Gen(StateMonad.unit(a), Stream(Some(a)))
+      
+    def map2[A,B,C](ga: Gen[A], gb: Gen[B])(f: (A,B)=>C): Gen[C] = 
+      for (a <- ga; b <- gb) yield f(a,b)
     
     private def randomBoolean: Rand[Boolean] =
       nextInt.map {i => i % 2 == 0}
@@ -95,7 +98,7 @@ trait props extends Randoms {
       pairOf(int, int)
       
     def pairOf[A,B](ga: Gen[A], gb:Gen[B]): Gen[(A,B)] =
-      for (a <- ga; b <- gb) yield (a,b)
+      map2(ga, gb){(a,b) => (a,b)}
     
     def uniform: Gen[Double] = 
       Gen(nextDouble, unbounded)
