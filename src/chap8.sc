@@ -4,10 +4,10 @@ object chap8 extends props {
 	import Streams._
 	
   val propTrue = new Prop { def check = Right(1) }//> propTrue  : chap8.Prop{def check: scala.util.Right[Nothing,Int]} = chap8$$an
-                                                  //| onfun$main$1$$anon$1@365474b4
+                                                  //| onfun$main$1$$anon$1@61cc1457
   val propFalse = new Prop { def check = Left("err") }
                                                   //> propFalse  : chap8.Prop{def check: scala.util.Left[String,Nothing]} = chap8$
-                                                  //| $anonfun$main$1$$anon$2@43b64611
+                                                  //| $anonfun$main$1$$anon$2@287cbe54
  
  
   
@@ -41,25 +41,28 @@ object chap8 extends props {
  			val randStr = rand.run(RNG.simple(1010))._1.toString
  			val exStr = exhaustive.take(11).mkString(",")
  			println(s"$randStr [$exStr]")
- 	}                                         //> printGen: (gen: (chapter6.StateMonad.State[chap8.RNG,Any], Stream[Any]))Unit
-                                                  //| 
+ 	}                                         //> printGen: (gen: (chapter6.StateMonad.State[chap8.RNG,Any], Stream[Option[Any
+                                                  //| ]]))Unit
 	
  
   
-  printGen( Gen.boolean )                         //> false [true,false]
+  printGen( Gen.boolean )                         //> false [Some(true),Some(false)]
  
- 	printGen( Gen.choose(100, 200) )          //> 118 [100,101,102,103,104,105,106,107,108,109,110]
+ 	printGen( Gen.choose(100, 200) )          //> 118 [Some(100),Some(101),Some(102),Some(103),Some(104),Some(105),Some(106),S
+                                                  //| ome(107),Some(108),Some(109),Some(110)]
 
- 	printGen( Gen.listOfN(5, Gen.boolean) )   //> List(false, true, true, false, false) [List(true, true, true, false, false),
-                                                  //| List(true, true, false, true, false),List(true, true, false, false, true),Li
-                                                  //| st(true, false, true, true, false),List(true, false, true, false, true),List
-                                                  //| (true, false, false, true, true),List(false, true, true, true, false),List(f
-                                                  //| alse, true, true, false, true),List(false, true, false, true, true),List(fal
-                                                  //| se, false, true, true, true)]
+ 	printGen( Gen.listOfN(5, Gen.boolean) )   //> List(false, true, true, false, false) [Some(List(true, true, true, false, fa
+                                                  //| lse)),Some(List(true, true, false, true, false)),Some(List(true, true, false
+                                                  //| , false, true)),Some(List(true, false, true, true, false)),Some(List(true, f
+                                                  //| alse, true, false, true)),Some(List(true, false, false, true, true)),Some(Li
+                                                  //| st(false, true, true, true, false)),Some(List(false, true, true, false, true
+                                                  //| )),Some(List(false, true, false, true, true)),Some(List(false, false, true, 
+                                                  //| true, true))]
  
-  printGen( Gen.listOfN(3, Gen.choose(0, 10 )) )  //> List(1, 5, 3) [List(0, 1, 2),List(0, 1, 3),List(0, 1, 4),List(0, 1, 5),List(
-                                                  //| 0, 1, 6),List(0, 1, 7),List(0, 1, 8),List(0, 1, 9),List(0, 2, 1),List(0, 2, 
-                                                  //| 3),List(0, 2, 4)]
+  printGen( Gen.listOfN(3, Gen.choose(0, 10 )) )  //> List(1, 5, 3) [Some(List(0, 1, 2)),Some(List(0, 1, 3)),Some(List(0, 1, 4)),S
+                                                  //| ome(List(0, 1, 5)),Some(List(0, 1, 6)),Some(List(0, 1, 7)),Some(List(0, 1, 8
+                                                  //| )),Some(List(0, 1, 9)),Some(List(0, 2, 1)),Some(List(0, 2, 3)),Some(List(0, 
+                                                  //| 2, 4))]
                                                    
   def p[T](s: Stream[Stream[T]]) = s.take(20).map(_.take(20).force).force
                                                   //> p: [T](s: Stream[Stream[T]])scala.collection.immutable.Stream[scala.collect
@@ -92,5 +95,5 @@ object chap8 extends props {
                                                   //|  8, 9, 10)
  
  
-                                                    
+                                                   
 }
