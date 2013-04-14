@@ -25,7 +25,9 @@ trait props extends Randoms {
       }}
     
     def cross[A,B](soa: Stream[Option[A]], sob: Stream[Option[B]] ): Stream[Option[(A,B)]] =
-      for (Some(oa) <- soa; Some(ob) <- sob) yield Some((oa, ob))
+      soa.withFilter{case Some(oa) => true; case _ => false}.flatMap {case Some(oa) =>  
+        sob.withFilter{case Some(ob) => true; case _ => false}.map {case Some(ob) =>
+             Some((oa, ob))}}
       
     
     def bounded[A](a:Stream[A]):Stream[Option[A]] =
