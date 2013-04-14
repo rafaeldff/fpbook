@@ -6,8 +6,8 @@ trait props extends Randoms {
   import Randoms._
 
   object Streams {
-    def combinations[A](size: Int, chooseFrom: Stream[A]): Stream[Stream[A]] = {
-      chooseFrom.permutations.toStream.map(_.take(size)).distinct
+    def combinations[A](size: Int, chooseFrom: Stream[Option[A]]): Stream[List[Option[A]]] = {
+      chooseFrom.permutations.toStream.map(_.take(size).toList).distinct
     }
 
     def clampDown[A](n: Int, s: Stream[A]): Stream[A] = {
@@ -17,6 +17,12 @@ trait props extends Randoms {
       else
         Stream.continually(s).flatten.take(n)
     }
+    
+    def traverse[A](loa: List[Option[A]]):Option[List[A]] = 
+      loa.foldRight(Some(Nil):Option[List[A]]) {(oa, ola) => (oa, ola) match {
+        case (Some(a), Some(la)) => Some(a :: la)
+        case _ => None
+      }}
     
     def bounded[A](a:Stream[A]):Stream[Option[A]] =
       a map (Some(_))
@@ -68,17 +74,8 @@ trait props extends Randoms {
     
     
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
-      val exhaustiveElements: Option[Stream[A]] =
-        if (g._2.exists{! _.isDefined})
-          None
-        else
-          Some(g._2.map {_.get})
-            
-      
-      val exhaustive = exhaustiveElements match {
-        case None => Stream(None)
-        case Some(elements) =>  combinations(n, clampDown(n, elements)).map{x => Some(x.toList)}
-      }
+      val input: Stream[Option[A]] = g._2
+      val exhaustive = combinations(n, clampDown(n, input)).map(traverse _)
       
       (between(n, g), exhaustive)
     }
