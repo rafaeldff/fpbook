@@ -94,13 +94,13 @@ trait props extends Randoms {
     def pair: Gen[(Int,Int)] = 
       Gen(nextPair, unbounded)
       
-    def pairOf[A](g: Gen[A]): Gen[(A,A)] = {
+    def pairOf[A,B](ga: Gen[A], gb:Gen[B]): Gen[(A,B)] = {
       val randPair = for (
-        a <- g.sample;
-        b <- g.sample
+        a <- ga.sample;
+        b <- gb.sample
       ) yield (a,b)
       
-      val allPairs = cross(g.exhaustive, g.exhaustive) 
+      val allPairs = cross(ga.exhaustive, gb.exhaustive) 
         
       Gen(randPair, allPairs)
     }
