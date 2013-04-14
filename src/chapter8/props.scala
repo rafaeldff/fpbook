@@ -24,6 +24,10 @@ trait props extends Randoms {
         case _ => None
       }}
     
+    def cross[A,B](soa: Stream[Option[A]], sob: Stream[Option[B]] ): Stream[Option[(A,B)]] =
+      for (Some(oa) <- soa; Some(ob) <- sob) yield Some((oa, ob))
+      
+    
     def bounded[A](a:Stream[A]):Stream[Option[A]] =
       a map (Some(_))
     
@@ -49,13 +53,13 @@ trait props extends Randoms {
     import Streams._
     
     def unit[A](a: => A): Gen[A] =
-      (StateMonad.unit(a), Stream(Some(a)))
+      Gen(StateMonad.unit(a), Stream(Some(a)))
     
     private def randomBoolean: Rand[Boolean] =
       nextInt.map {i => i % 2 == 0}
     
     def boolean: Gen[Boolean] = 
-      (randomBoolean, bounded( Stream(true,false) ))
+      Gen(randomBoolean, bounded( Stream(true,false) ))
     
     private def randomInterval(from:Int, to:Int): Rand[Int] = { 
       val range = to - from
@@ -63,57 +67,52 @@ trait props extends Randoms {
     }
     
     def choose(from:Int, to:Int): Gen[Int] =  
-      (randomInterval(from, to), bounded( Stream.from(from).take(to-from) ))
+      Gen(randomInterval(from, to), bounded( Stream.from(from).take(to-from) ))
 
     private def between[A](n: Int, g: Gen[A]): Rand[List[A]] =
       if (n <= 0)
         StateMonad.unit(Nil)
       else {
-        val ra  : Rand[A] = g._1
+        val ra  : Rand[A] = g.sample
         val rest: Rand[List[A]] = between(n-1, g)
         StateMonad.map2(ra, rest) {(a, la) => a :: la}
       }
     
-    
     def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = {
-      val input: Stream[Option[A]] = g._2
+      val input: Stream[Option[A]] = g.exhaustive
       val exhaustive = combinations(n, clampDown(n, input)).map(traverse _)
       
-      (between(n, g), exhaustive)
+      Gen(between(n, g), exhaustive)
     }
     
     private def nextPair: State[RNG, (Int,Int)] = 
       for (a <- nextInt; b <- nextInt) yield (a,b)
       
-      
     def pair: Gen[(Int,Int)] = 
-      (nextPair, unbounded)
-      
-    def cross[A,B](soa: Stream[Option[A]], sob: Stream[Option[B]] ): Stream[Option[(A,B)]] =
-      for (Some(oa) <- soa; Some(ob) <- sob) yield Some((oa, ob))
+      Gen(nextPair, unbounded)
       
     def pairOf[A](g: Gen[A]): Gen[(A,A)] = {
       val randPair = for (
-        a <- g._1;
-        b <- g._1
+        a <- g.sample;
+        b <- g.sample
       ) yield (a,b)
       
-      val allPairs = cross(g._2, g._2) 
+      val allPairs = cross(g.exhaustive, g.exhaustive) 
         
-      (randPair, allPairs)
+      Gen(randPair, allPairs)
     }
       
     
     def uniform: Gen[Double] = 
-      (nextDouble, unbounded)
+      Gen(nextDouble, unbounded)
       
-    def choose(i: Double, j:Double) =
-      (nextDouble.map{d => i + d*(j-i)}, unbounded)
+    def choose(i: Double, j:Double): Gen[Double] =
+      Gen(nextDouble.map{d => i + d*(j-i)}, unbounded)
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
   
-  type Gen[A] = (State[RNG, A],  Stream[Option[A]])
+  case class Gen[+A](sample: State[RNG, A],  exhaustive:Stream[Option[A]])
   
   def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
 }
