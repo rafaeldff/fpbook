@@ -82,6 +82,28 @@ trait props extends Randoms {
       (between(n, g), exhaustive)
     }
     
+    private def nextPair: State[RNG, (Int,Int)] = 
+      for (a <- nextInt; b <- nextInt) yield (a,b)
+      
+      
+    def pair: Gen[(Int,Int)] = 
+      (nextPair, unbounded)
+      
+    def cross[A,B](soa: Stream[Option[A]], sob: Stream[Option[B]] ): Stream[Option[(A,B)]] =
+      for (Some(oa) <- soa; Some(ob) <- sob) yield Some((oa, ob))
+      
+    def pairOf[A](g: Gen[A]): Gen[(A,A)] = {
+      val randPair = for (
+        a <- g._1;
+        b <- g._1
+      ) yield (a,b)
+      
+      val allPairs = cross(g._2, g._2) 
+        
+      (randPair, allPairs)
+    }
+      
+    
     def uniform: Gen[Double] = 
       (nextDouble, unbounded)
       
