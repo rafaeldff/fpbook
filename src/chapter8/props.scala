@@ -114,6 +114,13 @@ trait props extends Randoms {
           (n, m+1)
       }
     
+    def listOfN2[A](n: Int, g: Gen[A]): Gen[List[A]] = {
+      if (n <=0) 
+        unit(Nil:List[A])
+      else
+        map2(g, listOfN2(n-1, g)) {_ :: _}
+    }
+    
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
   }
   

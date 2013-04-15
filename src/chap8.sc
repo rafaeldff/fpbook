@@ -4,10 +4,10 @@ object chap8 extends props {
 	import Streams._
 	
   val propTrue = new Prop { def check = Right(1) }//> propTrue  : chap8.Prop{def check: scala.util.Right[Nothing,Int]} = chap8$$an
-                                                  //| onfun$main$1$$anon$1@4c025303
+                                                  //| onfun$main$1$$anon$1@33805516
   val propFalse = new Prop { def check = Left("err") }
                                                   //> propFalse  : chap8.Prop{def check: scala.util.Left[String,Nothing]} = chap8$
-                                                  //| $anonfun$main$1$$anon$2@2959ee1d
+                                                  //| $anonfun$main$1$$anon$2@2f4a2e75
   
   propTrue.check                                  //> res0: scala.util.Right[Nothing,Int] = Right(1)
   propFalse.check                                 //> res1: scala.util.Left[String,Nothing] = Left(err)
@@ -69,6 +69,11 @@ object chap8 extends props {
                                                   //|  true, false, false, true)),Some(List(true, false, true, true, false)),Some
                                                   //| (List(true, false, true, false, true)),Some(List(true, false, false, true, 
                                                   //| true))])
+                                                  
+  printGen( Gen.listOfN(5, Gen.uniform) )         //> Gen(List(0.1809542948291424, 0.5568913326397964, 0.39641847759318466, 0.142
+                                                  //| 23108586959127, 0.7284131076784865),[None])
+  printGen( Gen.listOfN2(5, Gen.uniform) )        //> Gen(List(0.1809542948291424, 0.5568913326397964, 0.39641847759318466, 0.142
+                                                  //| 23108586959127, 0.7284131076784865),[None])
   /*
  
    
