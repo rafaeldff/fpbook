@@ -36,18 +36,22 @@ trait props extends Randoms {
     def unbounded[A]: Stream[Option[A]] = Stream(None)
   }
   
+  trait Status
+  case object Proven extends Status
+  case object Unfalsified extends Status
   
   type SuccessCount = Int
   type FailedCase = String
 
-  trait Prop { self =>
-    def check: Either[FailedCase, SuccessCount]
-    def &&(other: Prop): Prop = new Prop {
+  type TestCases = Int
+  type Result = Either[FailedCase, (Status,SuccessCount)]
+  case class Prop(run: (TestCases,RNG) => Result) { self =>
+    def &&(other: Prop): Prop = ???/*new Prop {
       def check = self.check match {
         case Left(failedCase) => Left(failedCase) 
         case Right(successCount) => other.check
       }
-    }
+    }*/
     
   }
   
@@ -158,6 +162,66 @@ trait props extends Randoms {
     def listOfN(size: Gen[Int]): Gen[List[A]] =
       size.flatMap { n => Gen.listOfN(n, this)}
   }
+  
+  def buildMsg[A](s: A, e: Exception): String =
+    "test case: " + s + "\n" +
+    "generated an exception: " + e.getMessage + "\n" +
+    "stack trace:\n" + e.getStackTrace.mkString("\n")
+    
+  /* Produce an infinite random stream from a `Gen` and a starting `RNG`. */ 
+  def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
+    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+      f(z) match {
+        case None => Stream.empty
+        case x@Some((a,s)) => a #:: unfold(s)(f)
+      }
+    
+    unfold(rng)(rng => Some(g.sample.run(rng)))
+  }
 
-  def forAll[A](ga: Gen[A])(f: A => Boolean): Prop = ???
+
+  //------------   
+  def forAll[A](a: Gen[A])(f: A => Boolean): Prop = Prop {
+    (n, rng) =>
+      {
+        def go(i: Int, j: Int, s: Stream[Option[A]], onEnd: Int => Result): Result =
+          if (i == j) Right((Unfalsified, i))
+          else s match {
+            case Some(h) #:: t =>
+              try {
+                if (f(h)) go(i + 1, j, s, onEnd)
+                else Left(h.toString)
+              }
+              catch { case e: Exception => Left(buildMsg(h, e)) }
+            case None #:: _ => Right((Unfalsified, i))
+            case Stream.Empty => onEnd(i)
+          }
+        go(0, n / 3, a.exhaustive, i => Right((Proven, i))) match {
+          case Right((Unfalsified, _)) =>
+            val rands = randomStream(a)(rng).map(Some(_))
+            go(n / 3, n, rands, i => Right((Unfalsified, i)))
+          case s => s
+        }
+      }
+  }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+ //------------   
 }
