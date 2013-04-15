@@ -30,6 +30,11 @@ trait props extends Randoms {
         case _ => None
       }
       
+    def interleave[A](s1: Stream[A], s2: Stream[A]): Stream[A] =
+      s1 match {
+        case Stream.Empty => s2
+        case x #:: xs => x #:: interleave(s2, xs)
+      }
     
     def bounded[A](a:Stream[A]):Stream[Option[A]] =
       a map (Some(_))
@@ -119,6 +124,19 @@ trait props extends Randoms {
         unit(Nil:List[A])
       else
         map2(g, listOfN2(n-1, g)) {_ :: _}
+    }
+    
+    def mix[A](r: Rand[A], s:Rand[A]):Rand[A] = 
+      randomBoolean.flatMap {
+        case true  => r
+        case false => s
+      }
+      
+      
+    def union[A](g1: Gen[A], g2: Gen[A]):Gen[A] = {
+      val sample = mix(g1.sample, g2.sample)
+      val exhaustive = interleave(g1.exhaustive, g2.exhaustive)
+      Gen(sample, exhaustive)
     }
     
     def listOf[A](gen: Gen[A]):Gen[List[A]] = ???

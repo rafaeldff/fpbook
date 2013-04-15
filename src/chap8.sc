@@ -4,10 +4,10 @@ object chap8 extends props {
 	import Streams._
 	
   val propTrue = new Prop { def check = Right(1) }//> propTrue  : chap8.Prop{def check: scala.util.Right[Nothing,Int]} = chap8$$an
-                                                  //| onfun$main$1$$anon$1@33805516
+                                                  //| onfun$main$1$$anon$1@374d8c71
   val propFalse = new Prop { def check = Left("err") }
                                                   //> propFalse  : chap8.Prop{def check: scala.util.Left[String,Nothing]} = chap8$
-                                                  //| $anonfun$main$1$$anon$2@2f4a2e75
+                                                  //| $anonfun$main$1$$anon$2@6f6dc3c9
   
   propTrue.check                                  //> res0: scala.util.Right[Nothing,Int] = Right(1)
   propFalse.check                                 //> res1: scala.util.Left[String,Nothing] = Left(err)
@@ -23,10 +23,16 @@ object chap8 extends props {
 	//forAll(intList)(l => l.headOption == l.reverse.lastOption)
 	//val failingProp = forAll(intList)(l => l.reverse == l)
  
+  def printRand(rand: Rand[Any]):String =
+  	rand.run(RNG.simple(1010))._1.toString    //> printRand: (rand: chap8.Rand[Any])String
+  	
+  def printStream(s: Stream[Any]):String =
+  	s.take(6).mkString(",")                   //> printStream: (s: Stream[Any])String
+  	
  	def printGen(gen: Gen[Any]) = gen match {
  		case Gen(rand, exhaustive) =>
- 			val randStr = rand.run(RNG.simple(1010))._1.toString
- 			val exStr = exhaustive.take(6).mkString(",")
+ 			val randStr = printRand(rand)
+ 			val exStr = printStream(exhaustive)
  			println(s"Gen($randStr,[$exStr])")
  	}                                         //> printGen: (gen: chap8.Gen[Any])Unit
 	
@@ -74,9 +80,24 @@ object chap8 extends props {
                                                   //| 23108586959127, 0.7284131076784865),[None])
   printGen( Gen.listOfN2(5, Gen.uniform) )        //> Gen(List(0.1809542948291424, 0.5568913326397964, 0.39641847759318466, 0.142
                                                   //| 23108586959127, 0.7284131076784865),[None])
+                                                  
+  printRand( Gen.mix(Gen.unit(1).sample, Gen.unit(10).sample) )
+                                                  //> res9: String = 10
+                                                  
+  printStream( interleave(Stream(1,2,3), Stream(10,20,30)) )
+                                                  //> res10: String = 1,10,2,20,3,30
+  
+  printStream( interleave(Stream.from(1), Stream.from(100)) )
+                                                  //> res11: String = 1,100,2,101,3,102
+                                                  
+  printStream( interleave(Stream(1,2), Stream.from(100)) )
+                                                  //> res12: String = 1,100,2,101,102,103
+                                                  
+  printGen( Gen.union(Gen.choose(0,50), Gen.choose(100,150)) )
+                                                  //> Gen(127,[Some(0),Some(100),Some(1),Some(101),Some(2),Some(102)])
   /*
  
    
-   
+      
   */
 }
