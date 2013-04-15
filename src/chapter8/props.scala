@@ -24,12 +24,6 @@ trait props extends Randoms {
         case _ => None
       }}
     
-    def cross[A,B](soa: Stream[Option[A]], sob: Stream[Option[B]] ): Stream[Option[(A,B)]] =
-      for (oa <- soa; ob <- sob) yield (oa, ob) match {
-        case (Some(a), Some(b)) => Some((a, b))
-        case _ => None
-      }
-      
     def interleave[A](s1: Stream[A], s2: Stream[A]): Stream[A] =
       s1 match {
         case Stream.Empty => s2
