@@ -63,9 +63,15 @@ object chap8 extends props {
   cross(Stream(Some(1),None), Stream(Some(2),Some(20))).mkString
                                                   //> res8: String = Some((1,2))Some((1,20))NoneNone
   
+  printGen( Gen.boolean.listOfN(Gen.choose(5,15)) )
+                                                  //> Gen(List(true, true, false, false, true, false),[Some(List(true, true, true
+                                                  //| , false, false)),Some(List(true, true, false, true, false)),Some(List(true,
+                                                  //|  true, false, false, true)),Some(List(true, false, true, true, false)),Some
+                                                  //| (List(true, false, true, false, true)),Some(List(true, false, false, true, 
+                                                  //| true))])
   /*
  
-  
+   
    
   */
 }
