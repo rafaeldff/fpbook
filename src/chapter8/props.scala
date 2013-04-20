@@ -48,13 +48,18 @@ trait props extends Randoms {
   type TestCases = Int
   type Result = Either[FailedCase, (Status,SuccessCount)]
   case class Prop(run: (TestCases,RNG) => Result) { self =>
-    def &&(other: Prop): Prop = ???/*new Prop {
-      def check = self.check match {
-        case Left(failedCase) => Left(failedCase) 
-        case Right(successCount) => other.check
+    def &&(other: Prop): Prop = new Prop({(testCases, rng) => 
+      self.run(testCases, rng) match {
+        case Right((selfStatus, selfCount)) =>
+          other.run(testCases, rng).right.map{
+            case (Proven, otherCount) if selfStatus == Proven => (Proven, otherCount+selfCount)  
+            case (Proven, otherCount) if selfStatus != Proven => (Unfalsified, otherCount+selfCount)  
+            case (Unfalsified, otherCount) => (Unfalsified, otherCount+selfCount)  
+          }
+        case Left(failure) => 
+          Left(failure)
       }
-    }*/
-    
+    })
   }
   
   object Gen {
