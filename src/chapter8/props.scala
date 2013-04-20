@@ -168,7 +168,7 @@ trait props extends Randoms {
       size.flatMap { n => Gen.listOfN(n, this)}
   }
   
-  def buildMsg[A](s: A, e: Exception): String =
+  def buildMsg[A](s: A)(e: Exception): String =
     "test case: " + s + "\n" +
     "generated an exception: " + e.getMessage + "\n" +
     "stack trace:\n" + e.getStackTrace.mkString("\n")
@@ -184,27 +184,31 @@ trait props extends Randoms {
     unfold(rng)(rng => Some(g.sample.run(rng)))
   }
 
-
-  //------------   
-  def forAll[A](a: Gen[A])(f: A => Boolean): Prop = Prop {
-    (n, rng) =>
+  def attempt(buildMsg: Exception => String)(test: => Result): Result =  
+    try test catch { case e: Exception => Left(buildMsg(e)) }
+  
+  def forAll[A](gen: Gen[A])(predicate: A => Boolean): Prop = Prop {
+    (numberOfTestCases, rng) =>
       {
-        def go(i: Int, j: Int, s: Stream[Option[A]], onEnd: Int => Result): Result =
-          if (i == j) Right((Unfalsified, i))
+        def go(countSoFar: Int, exhaustivenessTreshold: Int, s: Stream[Option[A]], onEnd: Int => Result): Result =
+          if (countSoFar == exhaustivenessTreshold) 
+            Right((Unfalsified, countSoFar))
           else s match {
-            case Some(h) #:: t =>
-              try {
-                if (f(h)) go(i + 1, j, s, onEnd)
+            case Some(h) #:: t =>     //there is a value
+              attempt(buildMsg(s) _) {
+                if (predicate(h)) go(countSoFar + 1, exhaustivenessTreshold, t, onEnd)
                 else Left(h.toString)
               }
-              catch { case e: Exception => Left(buildMsg(h, e)) }
-            case None #:: _ => Right((Unfalsified, i))
-            case Stream.Empty => onEnd(i)
+            case None #:: _ =>        //there is a signal of unboundness
+              Right((Unfalsified, countSoFar))
+            case Stream.Empty =>      //no more values. yay
+              onEnd(countSoFar)
           }
-        go(0, n / 3, a.exhaustive, i => Right((Proven, i))) match {
-          case Right((Unfalsified, _)) =>
-            val rands = randomStream(a)(rng).map(Some(_))
-            go(n / 3, n, rands, i => Right((Unfalsified, i)))
+        
+        go(0, numberOfTestCases / 3, gen.exhaustive, i => Right((Proven, i))) match {
+          case Right((Unfalsified, _)) => //Went through 1/3 of exhaustive values and gave up
+            val rands = randomStream(gen)(rng).map(Some(_))
+            go(numberOfTestCases / 3, numberOfTestCases, rands, i => Right((Unfalsified, i)))
           case s => s
         }
       }
