@@ -106,6 +106,14 @@ object chap8 extends props {
                                                   
   printGen( Gen.union(Gen.choose(0,50), Gen.choose(100,150)) )
                                                   //> Gen(127,[Some(0),Some(100),Some(1),Some(101),Some(2),Some(102)])
+  
+  printGen( Gen.listOf(Gen.boolean).forSize(10) ) //> Gen(List(false, true, true, false, false, true, false, true, false, false),
+                                                  //| [Some(List(true, true, true, true, true, true, true, true, true, true)),Som
+                                                  //| e(List(false, true, true, true, true, true, true, true, true, true)),Some(L
+                                                  //| ist(true, true, true, true, true, true, true, true, true, true)),Some(List(
+                                                  //| false, true, true, true, true, true, true, true, true, true)),Some(List(tru
+                                                  //| e, true, true, true, true, true, true, true, true, true)),Some(List(false, 
+                                                  //| true, true, true, true, true, true, true, true, true))])
   /*
  
    

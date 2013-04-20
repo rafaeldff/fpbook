@@ -147,7 +147,8 @@ trait props extends Randoms {
       Gen(sample, exhaustive)
     }
     
-    def listOf[A](gen: Gen[A]):Gen[List[A]] = ???
+    def listOf[A](gen: Gen[A]): SGen[List[A]] =
+      new SGen[List[A]]({size =>  listOfN(size, gen)})
   }
   
   case class Gen[+A](sample: State[RNG, A],  exhaustive:Stream[Option[A]]) {
