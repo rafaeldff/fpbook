@@ -171,6 +171,18 @@ trait props extends Randoms {
     
     def listOfN(size: Gen[Int]): Gen[List[A]] =
       size.flatMap { n => Gen.listOfN(n, this)}
+    
+    def unsized: SGen[A] = SGen(_ => this)
+  }
+  
+  case class SGen[+A](forSize: Int => Gen[A]) {
+    def map[B](f: A => B): SGen[B] =
+      SGen(s => forSize(s).map(f))
+      
+    def flatMap[B](f: A => SGen[B]): SGen[B] =
+      SGen({s =>
+        (forSize(s)).flatMap(a => f(a).forSize(s)) 
+      })
   }
   
   def buildMsg[A](s: A)(e: Exception): String =
