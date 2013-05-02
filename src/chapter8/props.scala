@@ -45,13 +45,14 @@ trait props extends Randoms {
   type SuccessCount = Int
   type FailedCase = String
 
+  type MaxSize = Int
   type TestCases = Int
   type Result = Either[FailedCase, (Status,SuccessCount)]
-  case class Prop(run: (TestCases,RNG) => Result) { self =>
-    def &&(other: Prop): Prop = new Prop({(testCases, rng) => 
-      self.run(testCases, rng) match {
+  case class Prop(run: (MaxSize,TestCases,RNG) => Result) { self =>
+    def &&(other: Prop): Prop = new Prop({(maxSize, testCases, rng) => 
+      self.run(maxSize, testCases, rng) match {
         case Right((selfStatus, selfCount)) =>
-          other.run(testCases, rng).right.map{
+          other.run(maxSize,testCases, rng).right.map{
             case (Proven, otherCount) if selfStatus == Proven => (Proven, otherCount+selfCount)  
             case (Proven, otherCount) if selfStatus != Proven => (Unfalsified, otherCount+selfCount)  
             case (Unfalsified, otherCount) => (Unfalsified, otherCount+selfCount)  
@@ -206,7 +207,7 @@ trait props extends Randoms {
     try test catch { case e: Exception => Left(buildMsg(e)) }
   
   def forAll[A](gen: Gen[A])(predicate: A => Boolean): Prop = Prop {
-    (numberOfTestCases, rng) =>
+    (maxSize, numberOfTestCases, rng) =>
       {
         def go(countSoFar: Int, exhaustivenessTreshold: Int, s: Stream[Option[A]], onEnd: Int => Result): Result =
           if (countSoFar == exhaustivenessTreshold) 
@@ -232,14 +233,15 @@ trait props extends Randoms {
       }
   }
     
-  val MAX = 10
   def forAllSGen[A](gen: SGen[A])(predicate: A => Boolean): Prop = Prop {
-    (numberOfTestCases, rng) => 
-      def attempt(i:Int):Result = 
-        forAll(gen.forSize(i))(predicate).run(numberOfTestCases, rng) match {
+    (maxSize, numberOfTestCases, rng) => 
+      val casesPerSize = numberOfTestCases / maxSize + 1 
+      def attempt(i:Int):Result = {
+        forAll(gen.forSize(i))(predicate).run(maxSize, casesPerSize, rng) match {
           case l@Left(_) => l
-          case r@Right(_) => if (i >= MAX) r else attempt(i+1)
+          case r@Right(_) => if (i >= maxSize) r else attempt(i+1)
         }
+      }
       
       attempt(0)
   }

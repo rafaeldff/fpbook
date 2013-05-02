@@ -16,16 +16,16 @@ object chap8 extends props {
   }                                               //> printGen: (gen: chap8.Gen[Any])Unit
 
   def printProp(p:Prop) =
-    p.run(10, RNG.simple(1010))                   //> printProp: (p: chap8.Prop)chap8.Result
+    p.run(10, 10, RNG.simple(1010))               //> printProp: (p: chap8.Prop)chap8.Result
 	
-  val propProven = Prop({(_,_)=>Right((Proven,2))})
-                                                  //> propProven  : chap8.Prop = Prop(<function2>)
-  val propUnfals = Prop({(_,_)=>Right((Unfalsified,2))})
-                                                  //> propUnfals  : chap8.Prop = Prop(<function2>)
-  val propFalse = Prop({(_,_)=>Left("err")})      //> propFalse  : chap8.Prop = Prop(<function2>)
+  val propProven = Prop({(_,_,_)=>Right((Proven,2))})
+                                                  //> propProven  : chap8.Prop = Prop(<function3>)
+  val propUnfals = Prop({(_,_,_)=>Right((Unfalsified,2))})
+                                                  //> propUnfals  : chap8.Prop = Prop(<function3>)
+  val propFalse = Prop({(_,_,_)=>Left("err")})    //> propFalse  : chap8.Prop = Prop(<function3>)
   
-  propProven.run(10, RNG.simple(8))               //> res0: chap8.Result = Right((Proven,2))
-  propFalse.run(10, RNG.simple(8))                //> res1: chap8.Result = Left(err)
+  propProven.run(10, 10, RNG.simple(8))           //> res0: chap8.Result = Right((Proven,2))
+  propFalse.run(10, 10, RNG.simple(8))            //> res1: chap8.Result = Left(err)
   
   
   printProp(propProven && propFalse)              //> res2: chap8.Result = Left(err)
@@ -42,17 +42,17 @@ object chap8 extends props {
 
                                                   
 	val prop1  =	forAll(intList)(l => l.reverse.reverse == l)
-                                                  //> prop1  : chap8.Prop = Prop(<function2>)
+                                                  //> prop1  : chap8.Prop = Prop(<function3>)
   println( intList.exhaustive.size )              //> 1024
                                                     
-  prop1.run(1000, RNG.simple(9))                  //> res8: chap8.Result = Right((Unfalsified,1000))
+  prop1.run(1000, 1000, RNG.simple(9))            //> res8: chap8.Result = Right((Unfalsified,1000))
   
   
   
 	val prop2 = forAll(intList)(l => l.headOption == l.reverse.lastOption)
-                                                  //> prop2  : chap8.Prop = Prop(<function2>)
+                                                  //> prop2  : chap8.Prop = Prop(<function3>)
 	val failingProp = forAll(intList)(l => l.reverse == l)
-                                                  //> failingProp  : chap8.Prop = Prop(<function2>)
+                                                  //> failingProp  : chap8.Prop = Prop(<function3>)
  
 
   
@@ -109,11 +109,11 @@ object chap8 extends props {
   
   printGen( Gen.listOf(Gen.boolean).forSize(10) ) //> Gen(List(false, true, true, false, false, true, false, true, false, false),
                                                   //| [Some(List(true, true, true, true, true, true, true, true, true, true)),Som
-                                                  //| e(List(false, true, true, true, true, true, true, true, true, true)),Some(L
-                                                  //| ist(true, true, true, true, true, true, true, true, true, true)),Some(List(
-                                                  //| false, true, true, true, true, true, true, true, true, true)),Some(List(tru
-                                                  //| e, true, true, true, true, true, true, true, true, true)),Some(List(false, 
-                                                  //| true, true, true, true, true, true, true, true, true))])
+                                                  //| e(List(true, true, true, true, true, true, true, true, true, false)),Some(L
+                                                  //| ist(true, true, true, true, true, true, true, true, false, true)),Some(List
+                                                  //| (true, true, true, true, true, true, true, true, false, false)),Some(List(t
+                                                  //| rue, true, true, true, true, true, true, false, true, true)),Some(List(true
+                                                  //| , true, true, true, true, true, true, false, true, false))])
   /*
  
    
