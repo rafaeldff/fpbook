@@ -236,14 +236,12 @@ trait props extends Randoms {
   def forAllSGen[A](gen: SGen[A])(predicate: A => Boolean): Prop = Prop {
     (maxSize, numberOfTestCases, rng) => 
       val casesPerSize = numberOfTestCases / maxSize + 1 
-      def attempt(i:Int):Result = {
-        forAll(gen.forSize(i))(predicate).run(maxSize, casesPerSize, rng) match {
-          case l@Left(_) => l
-          case r@Right(_) => if (i >= maxSize) r else attempt(i+1)
-        }
+      def attempt(i:Int):Prop= {
+        val current = forAll(gen.forSize(i))(predicate) 
+        if (i > 0) current && attempt(i-1) else current
       }
       
-      attempt(0)
+      attempt(maxSize).run(maxSize, numberOfTestCases, rng)
   }
     
     

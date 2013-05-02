@@ -31,31 +31,21 @@ object chap8forall extends props {
  
   val anyIntList = Gen.listOf(Gen.choose(0,2))    //> anyIntList  : chap8forall.SGen[List[Int]] = SGen(<function1>)
   
-  forAllSGen(anyIntList)(l => l.reverse.reverse == l).run(100, 1000, RNG.simple(9))
-                                                  //> res4: chap8forall.Result = Right((Unfalsified,11))
+  forAllSGen(anyIntList)(l => l.reverse.reverse == l).run(10, 100, RNG.simple(9))
+                                                  //> res4: chap8forall.Result = Right((Unfalsified,563))
   
   forAllSGen(anyIntList)(l => l.reverse == l).run(100, 1000, RNG.simple(9))
-                                                  //> res5: chap8forall.Result = Left(List(0, 1))
+                                                  //> res5: chap8forall.Result = Left(List(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+                                                  //| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                                                  //| , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                                  //|  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+                                                  //| 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1))
  
  
-  forAllSGen(anyIntList)(l => l.size < 500).run(1000, 1000, RNG.simple(9))
-                                                  //> res6: chap8forall.Result = Left(List(0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1,
-                                                  //|  1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0,
-                                                  //|  1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
-                                                  //|  0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0,
-                                                  //|  0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1,
-                                                  //|  1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0,
-                                                  //|  1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1,
-                                                  //|  0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1,
-                                                  //|  0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0,
-                                                  //|  1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0,
-                                                  //|  1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0,
-                                                  //|  1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1,
-                                                  //|  1, 0, 0, 1, 0, 0, 1, 0
-                                                  //| Output exceeds cutoff limit.
+  forAllSGen(anyIntList)(l => l.size < 5).run(10, 1000, RNG.simple(9))
+                                                  //> res6: chap8forall.Result = Left(List(0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
   
-  forAllSGen(anyIntList)(l => l.size < 50).run(1000, 1000, RNG.simple(9))
-                                                  //> res7: chap8forall.Result = Left(List(0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1,
-                                                  //|  1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0,
-                                                  //|  1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0))
+  forAllSGen(anyIntList)(l => l.size < 5).run(10, 1000, RNG.simple(9))
+                                                  //> res7: chap8forall.Result = Left(List(0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+  
 }
