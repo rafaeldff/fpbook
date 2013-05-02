@@ -18,7 +18,7 @@ object chap8forall extends props {
                                                   //> res0: chap8forall.Result = Right((Proven,8))
                                                   
   forAll(intList)(l => l.reverse.reverse == l).run(1000, RNG.simple(9))
-                                                  //> res1: chap8forall.Result = Right((Unfalsified,1333))
+                                                  //> res1: chap8forall.Result = Right((Unfalsified,1000))
     
     
     
@@ -28,5 +28,13 @@ object chap8forall extends props {
   forAll(intList)(l => l.reverse == l).run(1000, RNG.simple(9))
                                                   //> res3: chap8forall.Result = Left(List(0, 0, 0, 0, 0, 0, 0, 0, 0, 1))
  
-    
+ 
+  val anyIntList = Gen.listOf(Gen.choose(0,2))    //> anyIntList  : chap8forall.SGen[List[Int]] = SGen(<function1>)
+  
+  forAllSGen(anyIntList)(l => l.reverse.reverse == l).run(1000, RNG.simple(9))
+                                                  //> res4: chap8forall.Result = Right((Unfalsified,1000))
+  
+  forAllSGen(anyIntList)(l => l.reverse == l).run(1000, RNG.simple(9))
+                                                  //> res5: chap8forall.Result = Left(List(0, 1))
+ 
 }

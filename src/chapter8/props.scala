@@ -148,7 +148,7 @@ trait props extends Randoms {
     }
     
     def listOf[A](gen: Gen[A]): SGen[List[A]] =
-      new SGen[List[A]]({size =>  listOfN(size, gen)})
+      new SGen[List[A]]({size => listOfN2(size, gen)})
   }
   
   case class Gen[+A](sample: State[RNG, A],  exhaustive:Stream[Option[A]]) {
@@ -232,7 +232,17 @@ trait props extends Randoms {
       }
   }
     
-    
+  val MAX = 10
+  def forAllSGen[A](gen: SGen[A])(predicate: A => Boolean): Prop = Prop {
+    (numberOfTestCases, rng) => 
+      def attempt(i:Int):Result = 
+        forAll(gen.forSize(i))(predicate).run(numberOfTestCases, rng) match {
+          case l@Left(_) => l
+          case r@Right(_) => if (i >= MAX) r else attempt(i+1)
+        }
+      
+      attempt(0)
+  }
     
     
     
